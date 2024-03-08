@@ -42,7 +42,8 @@ def gpt_chat(
         api_kwargs = dict(base_url=LM_STUDIO_URL)
     else:
         api_key = random.sample(OPENAI_API_KEYS, 1)[0]
-        api_kwargs = dict(api_key=api_key)
+        api_kwargs = dict(api_key=api_key,  base_url="https://www.plus7.plus/v1"
+)
     client = OpenAI(**api_kwargs)
 
     formated_messages = [asdict(message) for message in messages]

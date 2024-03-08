@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+Author  : wenyi
+Review  :
+File    : node.py
+"""
 
 from swarm.graph import Graph
 from swarm.environment.operations import DirectAnswer
