@@ -9,8 +9,8 @@ import torch
 import copy
 
 from swarm.environment.operations.final_decision import FinalDecision, MergingStrategy
-from swarm.optimizer.edge_optimizer.parameterization import EdgeWiseDistribution #,EdgeWiseDistributionByModel
-#from swarm.optimizer.edge_optimizer.edge_network import EdgeNetwork
+from swarm.optimizer.edge_optimizer.parameterization import EdgeWiseDistribution ,EdgeWiseDistributionByModel
+from swarm.optimizer.edge_optimizer.edge_network import EdgeNetwork
 from swarm.memory import GlobalMemory
 from swarm.graph.composite_graph import CompositeGraph
 from swarm.utils.log import logger
@@ -37,6 +37,7 @@ class Swarm:
                  init_connection_probability: float = 0.5,
                  connect_output_nodes_to_final_node: bool = False,
                  include_inner_agent_connections: bool = True,
+                 edge_network_enable: bool = False
                  ):
         
         self.id = shortuuid.ShortUUID().random(length=4)    
@@ -51,6 +52,7 @@ class Swarm:
         self.node_optimize = node_optimize
         self.init_connection_probability = init_connection_probability
         self.connect_output_nodes_to_final_node = connect_output_nodes_to_final_node
+        self.edge_network_enable = edge_network_enable
         self.organize(include_inner_agent_connections)
 
     def organize(self, include_inner_agent_connections: bool = True):
@@ -101,9 +103,11 @@ class Swarm:
                 for node in agent.nodes:
                     if node in [output_node.id for output_node in agent.output_nodes]:
                         agent.nodes[node].add_successor(decision_method)
-        #edge_network = EdgeNetwork("bert-base-uncased", len(potential_connections))
-        #self.connection_dist = EdgeWiseDistributionByModel(potential_connections, edge_network, self.init_connection_probability)
-        self.connection_dist = EdgeWiseDistribution(potential_connections, self.init_connection_probability)
+        if self.edge_network_enable:
+            edge_network = EdgeNetwork("bert-base-uncased", len(potential_connections), initial_probability=init_connection_probability)
+            self.connection_dist = EdgeWiseDistributionByModel(potential_connections, edge_network, self.init_connection_probability)
+        else:
+            self.connection_dist = EdgeWiseDistribution(potential_connections, self.init_connection_probability)
         self.potential_connections = potential_connections
 
     def visualize_adj_matrix_distribution(self, logits):

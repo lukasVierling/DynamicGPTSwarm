@@ -6,7 +6,7 @@ import pickle
 import numpy as np
 #from edge_network import EdgeNetwork
 
-def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_size=4, record=False, experiment_id='experiment', use_learned_order=False):
+def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_size=4, record=False, experiment_id='experiment', use_learned_order=False, edge_network_enable=False):
     optimizer = torch.optim.Adam(swarm.connection_dist.parameters(), lr=lr)
     pbar = tqdm(range(num_iter))
     utilities = []
@@ -17,8 +17,14 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
         tasks = []
         log_probs = []
         for i in range(batch_size):
-            _graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order)
-            tasks.append(evaluator.evaluate(_graph, return_moving_average=True))
+            # we have to generate the graph based on input inside the evaluate function
+            if edge_network_enable:
+                task, log_prob = evaluator.evaluateWithEdgeNetwork(swarm.composite_graph, return_moving_average=True, use_learned_order=use_learned_order)
+                tasks.append(task)
+            else:
+                _graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order)
+                # evaluate is asynch so we can continue without finishing the execution and then wait in line 29
+                tasks.append(evaluator.evaluate(_graph, return_moving_average=True))
             log_probs.append(log_prob)
         results = loop.run_until_complete(asyncio.gather(*tasks))
         utilities.extend([result[0] for result in results])
@@ -27,6 +33,7 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
         else:
             moving_averages = np.array([result[1] for result in results])
         loss = (-torch.stack(log_probs) * torch.tensor(np.array(utilities[-batch_size:]) - moving_averages)).mean()
+        #TODO consider lower learning rate 
         loss.backward()
         optimizer.step()
 
@@ -37,6 +44,7 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
                     pickle.dump(utilities, file)
                 torch.save(swarm.connection_dist.state_dict(), f"result/crosswords/{experiment_id}_edge_logits_{step}.pt")
 
+#not in use anymore
 def optimize_EdgeNetwork(swarm, edge_network, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_size=4, record=False, experiment_id='experiment', use_learned_order=False):
     optimizer = torch.optim.Adam(edge_network.parameters(), lr=lr)
     pbar = tqdm(range(num_iter))

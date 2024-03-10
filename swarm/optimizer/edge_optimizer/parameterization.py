@@ -164,9 +164,12 @@ class EdgeWiseDistribution(ConnectDistribution):
                     temperature: float = 1.0, # must be >= 1.0
                     threshold: float = None,
                     use_learned_order: bool = False,
+                    inputs: dict = None,
                     ) -> Tuple[CompositeGraph, torch.Tensor]:
             # Compute edge_logits using the model
-            edge_logits = self.model(graph)
+
+            #inputs = process(inputs) #TODO
+            edge_logits = self.model(inputs)
             
             if use_learned_order:
                 ranks, log_prob = self.realize_ranks(graph, threshold is not None)
