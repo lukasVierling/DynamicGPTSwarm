@@ -37,8 +37,8 @@ class CrosswordsEvaluator():
         env.reset(self.perm[problem_idx])
         inputs = {"env": env}
         #Realize a Graph absed on the input TODO print the input and see how it should be processed by the llm
-        # print(inputs)
-        graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order, inputs)
+        print(inputs)
+        graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order, inputs=inputs)
         answer = (await graph.run(inputs, max_time=10000, max_tries=1, return_all_outputs=True))
         if not isinstance(answer, list):
             Warning("Answer is not a dictionary")

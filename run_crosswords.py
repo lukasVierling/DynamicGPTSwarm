@@ -33,7 +33,7 @@ if __name__ == "__main__":
         test_data = json.load(file)
 
     init_connection_probability = .1
-    batch_size = 20
+    batch_size = 1#20
     use_learned_order = False
     include_inner_agent_connections = True
     connect_output_nodes_to_final_node = True
@@ -46,6 +46,7 @@ if __name__ == "__main__":
                 edge_optimize=True,
                 init_connection_probability=init_connection_probability, 
                 connect_output_nodes_to_final_node=connect_output_nodes_to_final_node, 
-                include_inner_agent_connections=include_inner_agent_connections)
+                include_inner_agent_connections=include_inner_agent_connections,
+                edge_network_enable=edge_network_enable)
     optimize(swarm, evaluator, batch_size=batch_size, num_iter=11, display_freq=1, record=True,
               experiment_id=experiment_id, lr=.4, use_learned_order=use_learned_order, edge_network_enable=edge_network_enable)

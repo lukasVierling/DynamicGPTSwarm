@@ -19,15 +19,18 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
         for i in range(batch_size):
             # we have to generate the graph based on input inside the evaluate function
             if edge_network_enable:
-                task, log_prob = evaluator.evaluateWithEdgeNetwork(swarm.composite_graph, return_moving_average=True, use_learned_order=use_learned_order)
-                tasks.append(task)
+                tasks.append(evaluator.evaluateWithEdgeNetwork(swarm, return_moving_average=True, use_learned_order=use_learned_order))
             else:
                 _graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order)
-                # evaluate is asynch so we can continue without finishing the execution and then wait in line 29
                 tasks.append(evaluator.evaluate(_graph, return_moving_average=True))
-            log_probs.append(log_prob)
+                log_probs.append(log_prob)
         results = loop.run_until_complete(asyncio.gather(*tasks))
+        #log probs are returned by evaluateWithEdgeNetwork becasue they are not yet decided
+        if edge_network_enable:
+            log_probs = [result[1] for result in results]
+    
         utilities.extend([result[0] for result in results])
+
         if step == 0:
             moving_averages = np.array([np.mean(utilities) for _ in range(batch_size)])
         else:
