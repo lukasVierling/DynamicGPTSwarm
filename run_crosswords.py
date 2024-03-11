@@ -33,7 +33,7 @@ if __name__ == "__main__":
         test_data = json.load(file)
 
     init_connection_probability = .1
-    batch_size = 1#20
+    batch_size = 2
     use_learned_order = False
     include_inner_agent_connections = True
     connect_output_nodes_to_final_node = True

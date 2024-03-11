@@ -23,7 +23,6 @@ class EdgeNetwork(nn.Module):
         # Checked: Seems as if the input is basic text so the tokenizer can stay because text is not tokenized yet
         # TODO take care of initialization, should start with uniform dist, maybe use uniform + output and initialize with 0?
         self.linear = nn.Linear(self.llm_backbone.config.hidden_size, num_edges)
-        print(num_edges)
         nn.init.zeros_(self.linear.weight)
         # fill bias so that we get the initial probability after applying sigmoid
         # fill weights with zero
@@ -33,11 +32,14 @@ class EdgeNetwork(nn.Module):
         #self.sigmoid = nn.Sigmoid() #No Sigmoid because we do that later
 
     def forward(self, input_text):
+        print("lenght: ",len(input_text[0]))
         input_ids = self.tokenizer.batch_encode_plus(input_text, padding=True, truncation=True, return_tensors='pt')['input_ids']
-        llm_output = self.llm_backbone(input_ids)[0][0][-1]
-        print(llm_output.shape)
+        # GEt the hidden states
+        llm_output = self.llm_backbone(input_ids).last_hidden_state
+        # get hidden state of last token
+        llm_output = llm_output[0][-1]
+        # get edge logtis
         edge_logits = self.linear(llm_output)
-        print(edge_logits.shape)
         #edge_probs = self.sigmoid(edge_logits)
         return edge_logits
     

@@ -125,11 +125,9 @@ class Graph(ABC):
         useful_node_ids = [node_id for node_id, node in self.nodes.items() if is_node_useful(node)]
         in_degree = {node_id: len(self.nodes[node_id].predecessors) for node_id in useful_node_ids}
         zero_in_degree_queue = [node_id for node_id, deg in in_degree.items() if deg == 0 and node_id in useful_node_ids]
-
         for i, input_node in enumerate(self.input_nodes):
             node_input = deepcopy(inputs)
             input_node.inputs = [node_input]
-
         while zero_in_degree_queue:
             current_node_id = zero_in_degree_queue.pop(0)
             current_node = self.nodes[current_node_id]
@@ -144,13 +142,11 @@ class Graph(ABC):
                     print(f"Error during execution of node {current_node_id}: {e}")
                     break
                 tries += 1
-
             for successor in current_node.successors:
                 if successor.id in useful_node_ids:
                     in_degree[successor.id] -= 1
                     if in_degree[successor.id] == 0:
                         zero_in_degree_queue.append(successor.id)
-
         final_answers = []
 
         for output_node in self.output_nodes:
@@ -165,6 +161,7 @@ class Graph(ABC):
 
         if len(final_answers) == 0:
             final_answers.append("No answer since there are no inputs provided")
+        print("finished executing graph")
         return final_answers
 
     def find_node(self, id: str):
