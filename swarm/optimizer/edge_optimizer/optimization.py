@@ -39,7 +39,7 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
             moving_averages = np.array([result[1] for result in results])
         loss = (-torch.stack(log_probs) * torch.tensor(np.array(utilities[-batch_size:]) - moving_averages)).mean()
         print("loss: ",loss)
-        #TODO consider lower learning rate 
+        #TODO consider lower learning rate  rn at 0.01
         loss.backward()
         optimizer.step()
 

@@ -24,7 +24,6 @@ class EdgeNetwork(nn.Module):
             param.requires_grad = False
         # check if tokenizer is the same as for the data preprocessing (eos_token, etc.)
         # Checked: Seems as if the input is basic text so the tokenizer can stay because text is not tokenized yet
-        # TODO take care of initialization, should start with uniform dist, maybe use uniform + output and initialize with 0?
         self.linear = nn.Linear(self.llm_backbone.config.hidden_size, num_edges)
         nn.init.zeros_(self.linear.weight)
         # fill bias so that we get the initial probability after applying sigmoid
