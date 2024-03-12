@@ -38,7 +38,8 @@ class Swarm:
                  init_connection_probability: float = 0.5,
                  connect_output_nodes_to_final_node: bool = False,
                  include_inner_agent_connections: bool = True,
-                 edge_network_enable: bool = False
+                 edge_network_enable: bool = False,
+                 llm_backbone_name: str = "GPT2"
                  ):
         
         self.id = shortuuid.ShortUUID().random(length=4)    
@@ -54,6 +55,7 @@ class Swarm:
         self.init_connection_probability = init_connection_probability
         self.connect_output_nodes_to_final_node = connect_output_nodes_to_final_node
         self.edge_network_enable = edge_network_enable
+        self.llm_backbone_name = llm_backbone_name
         self.organize(include_inner_agent_connections)
 
     def organize(self, include_inner_agent_connections: bool = True):
@@ -105,7 +107,7 @@ class Swarm:
                     if node in [output_node.id for output_node in agent.output_nodes]:
                         agent.nodes[node].add_successor(decision_method)
         if self.edge_network_enable:
-            edge_network = EdgeNetwork(llm_backbone_name="bert-base-uncased", num_edges=len(potential_connections), initial_probability=self.init_connection_probability)
+            edge_network = EdgeNetwork(llm_backbone_name=self.llm_backbone_name, num_edges=len(potential_connections), initial_probability=self.init_connection_probability)
             self.connection_dist = EdgeWiseDistributionByModel(potential_connections, edge_network, self.domain)
         else:
             self.connection_dist = EdgeWiseDistribution(potential_connections, self.init_connection_probability)

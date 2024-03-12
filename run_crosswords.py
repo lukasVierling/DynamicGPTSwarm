@@ -39,6 +39,8 @@ if __name__ == "__main__":
     connect_output_nodes_to_final_node = True
     window_size = 10
     edge_network_enable = True
+    llm_backbone_name = "GPT2"
+    lr = 0.01 #0.4 for old experiments
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=window_size, init_socre=0.4, use_init_score=True)
     swarm = Swarm(["CrosswordsReflection", "CrosswordsToT", "CrosswordsBruteForceOpt"], "crosswords", "gpt-3.5-turbo-1106", #"gpt-4-1106-preview"
                 final_node_class="ReturnAll", 
@@ -47,6 +49,7 @@ if __name__ == "__main__":
                 init_connection_probability=init_connection_probability, 
                 connect_output_nodes_to_final_node=connect_output_nodes_to_final_node, 
                 include_inner_agent_connections=include_inner_agent_connections,
-                edge_network_enable=edge_network_enable)
+                edge_network_enable=edge_network_enable,
+                llm_backbone_name=llm_backbone_name)
     optimize(swarm, evaluator, batch_size=batch_size, num_iter=11, display_freq=1, record=True,
-              experiment_id=experiment_id, lr=.4, use_learned_order=use_learned_order, edge_network_enable=edge_network_enable)
+              experiment_id=experiment_id, lr=lr, use_learned_order=use_learned_order, edge_network_enable=edge_network_enable)

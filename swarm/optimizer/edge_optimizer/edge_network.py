@@ -16,6 +16,9 @@ class EdgeNetwork(nn.Module):
         super(EdgeNetwork, self).__init__()
         self.llm_backbone = AutoModel.from_pretrained(llm_backbone_name)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_backbone_name)
+        #add padding to stop hf from giving me warnings
+        self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+        self.llm_backbone.resize_token_embeddings(len(self.tokenizer))  # Resize token embeddings
         #freeze the backbone
         for param in self.llm_backbone.parameters():
             param.requires_grad = False
@@ -32,10 +35,11 @@ class EdgeNetwork(nn.Module):
         #self.sigmoid = nn.Sigmoid() #No Sigmoid because we do that later
 
     def forward(self, input_text):
-        print("lenght: ",len(input_text[0]))
+        
         input_ids = self.tokenizer.batch_encode_plus(input_text, padding=True, truncation=True, return_tensors='pt')['input_ids']
         # GEt the hidden states
-        llm_output = self.llm_backbone(input_ids).last_hidden_state
+        llm_bare_output = self.llm_backbone(input_ids)
+        llm_output = llm_bare_output.last_hidden_state
         # get hidden state of last token
         llm_output = llm_output[0][-1]
         # get edge logtis
