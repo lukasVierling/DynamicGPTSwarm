@@ -175,7 +175,6 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         prompt = [self.prompt_set.get_propose_prompt(env.render())]
         edge_logits = self.model(prompt)
         edge_logits = edge_logits.reshape(-1)
-        print(edge_logits.shape)
 
         if use_learned_order:
             ranks, log_prob = self.realize_ranks(graph, threshold is not None)
