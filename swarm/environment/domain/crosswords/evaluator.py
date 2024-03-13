@@ -28,7 +28,7 @@ class CrosswordsEvaluator():
         self.idx = 0
         self.perm = np.random.permutation(self.sample_size)
 
-    async def evaluateWithEdgeNetwork(self, swarm, return_moving_average=False, use_learned_order=False):
+    async def evaluateWithEdgeNetwork(self, swarm, return_moving_average=False, use_learned_order=False, evaluate_graph=True):
         self.idx += 1
         if self.idx == self.sample_size:
             self.shuffle_data()
@@ -38,6 +38,8 @@ class CrosswordsEvaluator():
         inputs = {"env": env}
         #Realize a Graph conditioned by input
         graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order, inputs=inputs)
+        if not(evaluate_graph):
+            return graph
         score = 0
         answer = (await graph.run(inputs, max_time=10000, max_tries=1, return_all_outputs=True))
         if not isinstance(answer, list):

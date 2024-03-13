@@ -31,20 +31,33 @@ if __name__ == "__main__":
     epochs = 1
     batch_size = 4
     use_learned_order = True
+    edge_network_enable = True
+    llm_backbone_name = "GPT2"
     num_batches = int(len(test_data) / batch_size)
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=num_batches)
-    swarm = Swarm(["CrosswordsReflection", "CrosswordsToT"], "crosswords", "gpt-4-1106-preview", #"gpt-3.5-turbo-1106",
-                final_node_class="TakeBest", final_node_kwargs={}, edge_optimize=True,
-                init_connection_probability=init_connection_probability, connect_output_nodes_to_final_node=True)
+
+    swarm = Swarm(["CrosswordsReflection", "CrosswordsToT", "CrosswordsBruteForceOpt"], "crosswords", "gpt-3.5-turbo-1106", #"gpt-4-1106-preview"
+                final_node_class="ReturnAll", 
+                final_node_kwargs={},
+                edge_optimize=True,
+                init_connection_probability=init_connection_probability, 
+                connect_output_nodes_to_final_node=True, 
+                include_inner_agent_connections=True,
+                edge_network_enable=edge_network_enable,
+                llm_backbone_name=llm_backbone_name)
     #swarm.connection_dist.load_state_dict(torch.load(f"result/crosswords_Jan15/{experiment_id}_edge_logits_{int(epochs * len(test_data) / batch_size) - 1}.pkl"))
-    swarm.connection_dist.load_state_dict(torch.load(f"result/crosswords/experiment1_edge_logits_10.pt"))
+    swarm.connection_dist.load_state_dict(torch.load(f"result/crosswords/experiment_edge_logits_10.pt"))
 
     num_edges = []
+    
     for _ in range(100):
-        graph = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order)[0]
+        graph = asyncio.run(evaluator.evaluateWithEdgeNetwork(swarm=swarm,return_moving_average = True, use_learned_order = False, evaluate_graph = False))
         num_edges.append(graph.num_edges)
+    #wait for evaluate functions to terminate
+    
     num_edges = int(np.array(num_edges).mean())
     print(f"Expected number of edges: {num_edges}")
+    
 
     graphs = [
                 swarm.connection_dist.random_sample_num_edges(swarm.composite_graph, num_edges),

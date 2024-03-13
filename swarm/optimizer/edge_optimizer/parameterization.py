@@ -205,3 +205,21 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
 
         log_prob = torch.sum(torch.stack(log_probs))
         return _graph, log_prob
+    
+    def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
+        _graph = deepcopy(graph)
+        while True:
+            if _graph.num_edges >= num_edges:
+                break
+            potential_connection = random.sample(self.potential_connections, 1)[0]
+            out_node = _graph.find_node(potential_connection[0])
+            in_node = _graph.find_node(potential_connection[1])
+
+            if not out_node or not in_node:
+                continue
+
+            if not _graph.check_cycle(in_node, {out_node}, set()):
+                out_node.add_successor(in_node)
+                in_node.add_predecessor(out_node)
+        return _graph
+
