@@ -18,11 +18,14 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
+
+from huggingface_hub import login 
+
 @LLMRegistry.register('CustomLLM')
 class CustomLLM(LLM):
     def __init__(self, model_name: str):
-        hf_token = os.getenv(f"HF_TOKEN")
-        print(hf_token) #TODO this doesn't work
+        print("We are using custom llm")
+        login("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")
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.pipeline = pipeline(

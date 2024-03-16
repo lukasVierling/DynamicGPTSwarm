@@ -173,7 +173,6 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         # Compute edge_logits using the model
         env = inputs["env"]
         prompt = [self.prompt_set.get_propose_prompt(env.render())]
-        print(prompt)
         edge_logits = self.model(prompt)
         edge_logits = edge_logits.reshape(-1)
 
