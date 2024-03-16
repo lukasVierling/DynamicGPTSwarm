@@ -53,7 +53,7 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
 
-        prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
         outputs = self.pipeline(
             prompt,
             max_new_tokens=max_tokens,
