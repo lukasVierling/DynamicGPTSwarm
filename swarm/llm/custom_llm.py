@@ -28,7 +28,7 @@ class CustomLLM(LLM):
         self.pipeline = pipeline(
             "text-generation",
             model=model_name,
-            model_kwargs={"torch_dtype": torch.bfloat16, "token":hf_token},
+            model_kwargs={"torch_dtype": torch.bfloat16},
             device="cuda",
         )
 
