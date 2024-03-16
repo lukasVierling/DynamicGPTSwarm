@@ -19,14 +19,16 @@ from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
 
-class GPTChat(LLM):
+class CustomLLM(LLM):
     def __init__(self, model_name: str):
+        hf_token = os.getenv(f"HF_TOKEN")
+        print(hf_token) #TODO this doesn't work
         self.model_name = model_name
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.pipeline = pipeline(
             "text-generation",
             model=model_name,
-            model_kwargs={"torch_dtype": torch.bfloat16},
+            model_kwargs={"torch_dtype": torch.bfloat16, "token":hf_token},
             device="cuda",
         )
 
@@ -87,19 +89,3 @@ class GPTChat(LLM):
             top_p=1.0
         )
         return outputs[0]["generated_text"][len(prompt):]
-def main():
-
-    # Create an instance of the GPTChat class
-    gpt_chat = GPTChat("google/gemma-2b-it")
-
-    # Create a list of Message objects
-    messages = [Message(role="user", content="Who are you? Please, answer in pirate-speak.")]
-
-    # Call the gen method
-    output = gpt_chat.gen(messages)
-
-    # Print the output
-    print(output)
-
-if __name__ == "main":
-    main()
