@@ -42,7 +42,7 @@ if __name__ == "__main__":
     llm_backbone_name = "GPT2"
     lr = 0.0001 #0.4 for old experiments
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=window_size, init_socre=0.4, use_init_score=True)
-    swarm = Swarm(["CrosswordsReflection", "CrosswordsToT", "CrosswordsBruteForceOpt"], "crosswords", "gpt-3.5-turbo-1106", #"gpt-4-1106-preview"
+    swarm = Swarm(["CrosswordsReflection", "CrosswordsToT", "CrosswordsBruteForceOpt"], "crosswords", "CustomLLM", #"gpt-4-1106-preview"
                 final_node_class="ReturnAll", 
                 final_node_kwargs={},
                 edge_optimize=True,

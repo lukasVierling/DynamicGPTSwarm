@@ -18,7 +18,7 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
-
+@LLMRegistry.register('CustomLLM')
 class CustomLLM(LLM):
     def __init__(self, model_name: str):
         hf_token = os.getenv(f"HF_TOKEN")
@@ -59,6 +59,7 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
+        print("We are using the custom llm in asynch lets gooo")
         return outputs[0]["generated_text"][len(prompt):]
 
     def gen(
@@ -88,4 +89,6 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
+        print("We are using the custom llm in synch lets gooo")
+
         return outputs[0]["generated_text"][len(prompt):]
