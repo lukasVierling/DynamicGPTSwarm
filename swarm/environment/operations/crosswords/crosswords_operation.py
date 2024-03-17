@@ -12,5 +12,5 @@ class CrosswordsOperation(Node):
         else:
             cache = cache[0]
         if not prompt in cache.keys():    
-            cache[prompt] = await self.llm.agen([Message(role="user", content=prompt)], temperature=0.0)
+            cache[prompt] = await self.llm.agen([Message(role="user", content=prompt)], temperature=0.0001)#TODO change this value was originally 0 but problems with gemma model
         return cache[prompt]

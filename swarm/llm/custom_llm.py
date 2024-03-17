@@ -35,14 +35,8 @@ class CustomLLM(LLM):
         self.model_name = "google/gemma-2B-it" #Should be modifiable later
         path = f"./models/{self.model_name}/pipeline"
         # Check if the path exists
-        if os.path.exists(path):
-            # Iterate over the files in the folder
-            for filename in os.listdir(path):
-                # Print each file name
-                print("Folder path does exist.")
-        else:
-            print("Folder path does not exist.")
-
+        print("Folder path does exist.") if os.path.exists(path) else print("Folder path does not exist.")            
+        #set up piepline 
         self.pipeline = pipeline(
             "text-generation",
             path
@@ -72,7 +66,7 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
 
-        prompt = pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
         outputs = self.pipeline(
             prompt,
             max_new_tokens=max_tokens,
