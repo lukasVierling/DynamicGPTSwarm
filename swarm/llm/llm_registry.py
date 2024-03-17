@@ -26,7 +26,7 @@ class LLMRegistry:
             model = cls.registry.get(model_name)
         elif model_name == "CustomLLM":
             # for custom model get the smalle gemma model and run on our gpus
-            model = cls.registry.get('CustomLLM', "google/gemma-2B-it")
+            model = cls.registry.get('CustomLLM')
         else: # any version of GPTChat like "gpt-4-1106-preview"
             model = cls.registry.get('GPTChat', model_name)
 

@@ -23,14 +23,16 @@ from swarm.llm.llm_registry import LLMRegistry
 class CustomLLM(LLM):
     _instance = None
 
-    def __new__(cls, model_name : str):
+    def __new__(cls,*args, **kwargs):
         if not isinstance(cls._instance, cls):
-            cls._instance = super(CustomLLM, cls).__new__(cls)
+            print("Create new model")
+            cls._instance = super(CustomLLM, cls).__new__(cls,*args, **kwargs)
         return cls._instance
 
-    def __init__(self, model_name: str):
+    def __init__(self):
+        super().__init__()
         print("We are using custom LLM class")
-        self.model_name = model_name
+        self.model_name = "google/gemma-2B-it" #Should be modifiable later
         path = f"./models/{self.model_name}/pipeline"
         # Check if the path exists
         if os.path.exists(path):
