@@ -18,12 +18,15 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
-import pdb
-
-#from huggingface_hub import login 
 
 @LLMRegistry.register('CustomLLM')
 class CustomLLM(LLM):
+     _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = super
+
     def __init__(self, model_name: str):
         print("We are using custom LLM class")
         self.model_name = model_name
