@@ -18,22 +18,35 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
+import pdb
 
-from huggingface_hub import login 
+#from huggingface_hub import login 
 
 @LLMRegistry.register('CustomLLM')
 class CustomLLM(LLM):
     def __init__(self, model_name: str):
-        print("We are using custom llm")
-        login("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")
+        print("We are using custom LLM class")
         self.model_name = model_name
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        path = f"./models/{self.model_name}/pipeline"
+        # Check if the path exists
+        if os.path.exists(path):
+            # Iterate over the files in the folder
+            for filename in os.listdir(path):
+                # Print each file name
+                print("Folder path does exist.")
+        else:
+            print("Folder path does not exist.")
+
         self.pipeline = pipeline(
             "text-generation",
-            model=model_name,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device="cuda",
+            path
         )
+        #Old settings but not working because hf token not working
+        '''
+        model=model_name,
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        device="cuda",
+        '''
 
     async def agen(
         self,
@@ -53,7 +66,7 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
 
-        prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
         outputs = self.pipeline(
             prompt,
             max_new_tokens=max_tokens,

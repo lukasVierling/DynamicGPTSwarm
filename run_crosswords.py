@@ -14,6 +14,8 @@ from swarm.graph.swarm import Swarm
 from swarm.optimizer.edge_optimizer.optimization import optimize
 from swarm.environment.domain.crosswords.evaluator import CrosswordsEvaluator
 
+#from huggingface_hub import login
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
@@ -41,8 +43,9 @@ if __name__ == "__main__":
     edge_network_enable = True
     llm_backbone_name = "GPT2"
     lr = 0.0001 #0.4 for old experiments
+
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=window_size, init_socre=0.4, use_init_score=True)
-    swarm = Swarm(["CrosswordsReflection", "CrosswordsToT", "CrosswordsBruteForceOpt"], "crosswords", "CustomLLM", #"gpt-4-1106-preview"
+    swarm = Swarm(["CrosswordsBruteForceOpt"], "crosswords", "CustomLLM", #"gpt-4-1106-preview" , "CrosswordsReflection","CrosswordsToT", 
                 final_node_class="ReturnAll", 
                 final_node_kwargs={},
                 edge_optimize=True,
