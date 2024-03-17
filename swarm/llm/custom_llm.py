@@ -25,7 +25,8 @@ class CustomLLM(LLM):
 
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
-            cls._instance = super
+            cls._instance = super(CustomLLM, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
 
     def __init__(self, model_name: str):
         print("We are using custom LLM class")
