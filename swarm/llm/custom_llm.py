@@ -21,11 +21,11 @@ from swarm.llm.llm_registry import LLMRegistry
 
 @LLMRegistry.register('CustomLLM')
 class CustomLLM(LLM):
-     _instance = None
+    _instance = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, model_name : str):
         if not isinstance(cls._instance, cls):
-            cls._instance = super(CustomLLM, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(CustomLLM, cls).__new__(cls)
         return cls._instance
 
     def __init__(self, model_name: str):
