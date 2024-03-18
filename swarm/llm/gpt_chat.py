@@ -127,7 +127,15 @@ class GPTChat(LLM):
 
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
-
+        '''
+        outputs = await gpt_achat(self.model_name,
+                               messages,
+                               max_tokens,
+                               temperature,
+                               num_comps)
+        print("The text ill be retunrned like that: ", outputs)
+        return outputs 
+        '''
         return await gpt_achat(self.model_name,
                                messages,
                                max_tokens,

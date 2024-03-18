@@ -39,14 +39,17 @@ class CustomLLM(LLM):
         #set up piepline 
         self.pipeline = pipeline(
             "text-generation",
-            path
+            path,
+            device=0
         )
         #Old settings but not working because hf token not working
+
         '''
         model=model_name,
         model_kwargs={"torch_dtype": torch.bfloat16},
         device="cuda",
         '''
+
 
     async def agen(
         self,
@@ -67,6 +70,7 @@ class CustomLLM(LLM):
             messages = [Message(role="user", content=messages)]
 
         prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        print(prompt)
         outputs = self.pipeline(
             prompt,
             max_new_tokens=max_tokens,
@@ -75,7 +79,7 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
-        print("We are using the custom llm in asynch lets gooo")
+        print("The text ill be retunrned like that: ",outputs[0]["generated_text"][len(prompt):])
         return outputs[0]["generated_text"][len(prompt):]
 
     def gen(

@@ -35,7 +35,7 @@ if __name__ == "__main__":
         test_data = json.load(file)
 
     init_connection_probability = .1
-    batch_size = 2 #20
+    batch_size = 1 #20
     use_learned_order = False
     include_inner_agent_connections = True
     connect_output_nodes_to_final_node = True
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     lr = 0.0001 #0.4 for old experiments
 
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=window_size, init_socre=0.4, use_init_score=True)
-    swarm = Swarm(["CrosswordsToT"], "crosswords", "CustomLLM", #"gpt-4-1106-preview" ,  ,"CrosswordsBruteForceOpt","CrosswordsReflection"
+    swarm = Swarm(["CrosswordsToT","CrosswordsBruteForceOpt","CrosswordsReflection"], "crosswords", "CustomLLM",#"gpt-3.5-turbo-1106", #"gpt-4-1106-preview" ,  
                 final_node_class="ReturnAll", 
                 final_node_kwargs={},
                 edge_optimize=True,
