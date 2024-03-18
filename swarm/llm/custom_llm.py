@@ -2,6 +2,7 @@ from transformers import AutoTokenizer, pipeline
 import torch
 import asyncio
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,4,5,6,7"
 from dataclasses import asdict
 from typing import List, Union, Optional
 from dotenv import load_dotenv
@@ -32,7 +33,7 @@ class CustomLLM(LLM):
     def __init__(self):
         super().__init__()
         print("We are using custom LLM class")
-        self.model_name = "google/gemma-2B-it" #Should be modifiable later
+        self.model_name = "google/gemma-7B-it" #Should be modifiable later
         path = f"./models/{self.model_name}/pipeline"
         # Check if the path exists
         print("Folder path does exist.") if os.path.exists(path) else print("Folder path does not exist.")            
@@ -40,7 +41,7 @@ class CustomLLM(LLM):
         self.pipeline = pipeline(
             "text-generation",
             path,
-            device=0
+            device_map="auto" #TODO Test this thing
         )
         #Old settings but not working because hf token not working
 
@@ -70,7 +71,6 @@ class CustomLLM(LLM):
             messages = [Message(role="user", content=messages)]
 
         prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        print(prompt)
         outputs = self.pipeline(
             prompt,
             max_new_tokens=max_tokens,
@@ -79,7 +79,7 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
-        print("The text ill be retunrned like that: ",outputs[0]["generated_text"][len(prompt):])
+        #print("The text ill be retunrned like that: ",outputs[0]["generated_text"][len(prompt):])
         return outputs[0]["generated_text"][len(prompt):]
 
     def gen(
