@@ -16,7 +16,7 @@ class CrosswordsPromptSet(PromptSet):
 
 {board}
 
-Given the current status, list all possible answers for unfilled or changed words, and your confidence levels (certain/high/medium/low), using the format "h1. apple (medium) v5. germany (low) h2. computer (certain) v3. heartbroken (high)". Use "certain" cautiously and only when you are 100% sure this is the correct word. You can list more then one possible answer for each word.
+Given the current status, list all possible answers for unfilled or changed words, and your confidence levels (certain/high/medium/low), using the format "h1. apple (medium) \n v5. germany (low) \n h2. computer (certain) \n v3. heartbroken (high)". Use "certain" cautiously and only when you are 100% sure this is the correct word. You can list more then one possible answer for each word.
 '''
     @staticmethod
     def get_if_correct_prompt(word, meaning):
