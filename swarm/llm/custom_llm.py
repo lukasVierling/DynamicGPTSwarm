@@ -1,8 +1,7 @@
-from transformers import AutoTokenizer, pipeline
+import os
+from transformers import AutoTokenizer, pipeline, AutoModelForCausalLM
 import torch
 import asyncio
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,4,5,6,7"
 from dataclasses import asdict
 from typing import List, Union, Optional
 from dotenv import load_dotenv
@@ -19,37 +18,23 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
-
 @LLMRegistry.register('CustomLLM')
-class CustomLLM(LLM):
-    _instance = None
+@LLMRegistry.register('CustomLLM')
 
-    def __new__(cls,*args, **kwargs):
-        if not isinstance(cls._instance, cls):
-            print("Create new model")
-            cls._instance = super(CustomLLM, cls).__new__(cls,*args, **kwargs)
-        return cls._instance
+class CustomLLM(LLM):
+    model = None
+    tokenizer = None
+    model_name = "google/gemma-2b-it" #Should be modifiable later
 
     def __init__(self):
         super().__init__()
         print("We are using custom LLM class")
-        self.model_name = "google/gemma-7B-it" #Should be modifiable later
-        path = f"./models/{self.model_name}/pipeline"
-        # Check if the path exists
-        print("Folder path does exist.") if os.path.exists(path) else print("Folder path does not exist.")            
-        #set up piepline 
-        self.pipeline = pipeline(
-            "text-generation",
-            path,
-            device_map="auto" #TODO Test this thing
-        )
-        #Old settings but not working because hf token not working
-
-        '''
-        model=model_name,
-        model_kwargs={"torch_dtype": torch.bfloat16},
-        device="cuda",
-        '''
+        if CustomLLM.model is None:
+            print("Load Model...")
+            CustomLLM.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch.bfloat16).to("cuda")
+        if CustomLLM.tokenizer is None:
+            print("Load Tokenizer")
+            CustomLLM.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
 
     async def agen(
@@ -70,17 +55,20 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
 
-        prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        outputs = self.pipeline(
+        prompt = CustomLLM.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = CustomLLM.tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt").to("cuda")
+        outputs = CustomLLM.model.generate(
             prompt,
-            max_new_tokens=max_tokens,
             do_sample=True,
+            max_length=max_tokens,
             temperature=temperature,
+            num_return_sequences=num_comps,
             top_k=50,
             top_p=1.0
         )
-        #print("The text ill be retunrned like that: ",outputs[0]["generated_text"][len(prompt):])
-        return outputs[0]["generated_text"][len(prompt):]
+        output_text = CustomLLM.tokenizer.decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
+        #print(output_text)
+        return output_text
 
     def gen(
         self,
@@ -100,15 +88,19 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
 
-        prompt = self.pipeline.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        outputs = self.pipeline(
+        
+
+        prompt = CustomLLM.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = CustomLLM.tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt").to("cuda")
+        outputs = CustomLLM.model.generate(
             prompt,
-            max_new_tokens=max_tokens,
             do_sample=True,
+            max_length=max_tokens,
             temperature=temperature,
+            num_return_sequences=num_comps,
             top_k=50,
             top_p=1.0
         )
-        print("We are using the custom llm in synch lets gooo")
-
-        return outputs[0]["generated_text"][len(prompt):]
+        output_text = CustomLLM.tokenizer.decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
+        #print(output_text)
+        return output_text

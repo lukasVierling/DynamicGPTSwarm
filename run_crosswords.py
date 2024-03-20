@@ -7,6 +7,8 @@ import pickle
 import torch
 import sys
 import random
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "6,7"
 
 from swarm.environment.domain.crosswords.env import MiniCrosswordsEnv
 from swarm.environment.agents.agent_registry import AgentRegistry
@@ -35,12 +37,12 @@ if __name__ == "__main__":
         test_data = json.load(file)
 
     init_connection_probability = .1
-    batch_size = 1 #20
+    batch_size = 5 #20
     use_learned_order = False
     include_inner_agent_connections = True
     connect_output_nodes_to_final_node = True
     window_size = 10
-    edge_network_enable = True
+    edge_network_enable = False
     llm_backbone_name = "GPT2"
     lr = 0.0001 #0.4 for old experiments
 
