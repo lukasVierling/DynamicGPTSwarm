@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 from typing import Union, List, Literal
 import numpy as np
+import re
 
 from experiments.evaluator.datasets.base_dataset import BaseDataset, SwarmInput
 
@@ -80,8 +81,15 @@ class MMLUDataset(BaseDataset):
                 answer = ""
         if not isinstance(answer, str):
             raise Exception("Expected string")
+
         if len(answer) > 0:
-            answer = answer[0] # Try to format the answer by taking the first letter
+            match = re.search(r'\b([A-D])\b', answer)
+            if match:
+                return match.group(1)
+            else:
+                return ""
+
+            #answer = answer[0] # Try to format the answer by taking the first letter
         return answer
 
     @staticmethod

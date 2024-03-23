@@ -26,7 +26,8 @@ class MMLUPromptSet(PromptSet):
             You must choose the correct answer to the question.
             Your response must be one of the 4 letters: A, B, C or D,
             corresponding to the correct answer.
-            Only one letter (A, B, C or D) is allowed in your answer.
+            Answer with only a single letter (A,B,C or D).
+            Do not include any other information in your answer except the letter.
         """
 
     @staticmethod

@@ -112,7 +112,6 @@ class Graph(ABC):
                   max_tries: int = 3, 
                   max_time: int = 600, 
                   return_all_outputs: bool = False) -> List[Any]:
- 
         def is_node_useful(node):
             if node in self.output_nodes:
                 return True

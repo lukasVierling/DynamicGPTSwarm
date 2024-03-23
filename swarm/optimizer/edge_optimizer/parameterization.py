@@ -161,6 +161,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         self.node_id2idx = {node_id: i for i, node_id in enumerate(node_ids)}
         order_tensor = torch.randn(len(node_ids))
         self.order_params = torch.nn.Parameter(order_tensor)
+        self.domain = domain
         self.prompt_set = PromptSetRegistry.get(domain)
 
     def realize(self,
@@ -171,10 +172,16 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                 inputs: dict = None,
                 ) -> Tuple[CompositeGraph, torch.Tensor]:
         # Compute edge_logits using the model
-        env = inputs["env"]
-        prompt = [self.prompt_set.get_propose_prompt(env.render())]
+        if self.domain == "corsswords":    
+            env = inputs["env"]
+            prompt = [self.prompt_set.get_propose_prompt(env.render())]
+        elif self.domain == "mmlu":
+            prompt = [inputs["task"]]
+        
         edge_logits = self.model(prompt)
         edge_logits = edge_logits.reshape(-1)
+
+
 
         if use_learned_order:
             ranks, log_prob = self.realize_ranks(graph, threshold is not None)
@@ -194,6 +201,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
             addable_if_not_used_learned_order = (not use_learned_order) and (not _graph.check_cycle(in_node, {out_node}, set()))
             if addable_if_not_used_learned_order or addable_if_use_learned_order:
                 edge_prob = torch.sigmoid(edge_logit / temperature)
+                print("Edge porb: ",edge_prob)
                 if threshold:
                     edge_prob = torch.tensor(1 if edge_prob > threshold else 0)
                 if torch.rand(1) < edge_prob:

@@ -1,4 +1,7 @@
 import asyncio
+import os
+
+os.environ['CUDA_VISIBLE_DEVICES'] = "6,7"
 from typing import Union, Literal, Optional
 import argparse
 
@@ -30,6 +33,9 @@ def parse_args():
 
     parser.add_argument('--debug', action='store_true', default=False,
                         help="Set for a quick debug cycle")
+    
+    parser.add_argument('--edge_network_enable', action='store_true', default=False,
+                        help="Enable edge network")
 
     args = parser.parse_args()
     return args
@@ -42,6 +48,11 @@ async def main():
     debug: bool = args.debug
 
     model_name: Optional[str] = args.model_name
+
+    edge_network_enable = args.edge_network_enable
+
+    #temp
+    model_name = "CustomLLM"
 
     mode: Union[Literal['DirectAnswer'],
                 Literal['FullConnectedSwarm'],
@@ -71,6 +82,8 @@ async def main():
             final_node_class="FinalDecision",
             final_node_kwargs=dict(strategy=strategy),
             edge_optimize=True,
+            edge_network_enable=edge_network_enable,
+            llm_backbone_name="google/gemma-2B"
         )
 
     tag = f"{domain}_{swarm_name}_{strategy.name}_{mode}"
@@ -106,14 +119,15 @@ async def main():
 
         num_iters = 5 if debug else args.num_iterations
 
-        lr = 0.1
+        lr = 0.0001
 
-        edge_probs = await evaluator.optimize_swarm(num_iters=num_iters, lr=lr)
+        edge_probs = await evaluator.optimize_swarm(num_iters=num_iters, lr=lr, edge_network_enable=edge_network_enable)
 
         score = await evaluator.evaluate_swarm(
-            mode='external_edge_probs',
+            mode='edge_network',
             edge_probs=edge_probs,
             limit_questions=limit_questions,
+            edge_network_enable=True
             )
     else:
         raise Exception(f"Unsupported mode {mode}")

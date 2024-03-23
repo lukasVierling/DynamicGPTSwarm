@@ -100,6 +100,7 @@ class Evaluator():
             edge_probs: Optional[torch.Tensor] = None,
             limit_questions: Optional[int] = None,
             eval_batch_size: int = 4,
+            edge_network_enable: bool = False,
             ) -> float:
 
         assert self._swarm is not None
@@ -147,9 +148,17 @@ class Evaluator():
             for record in record_batch:
                 if mode == 'randomly_connected_swarm':
                     realized_graph, _ = self._swarm.connection_dist.realize(self._swarm.composite_graph)
-                assert realized_graph is not None
+                #assert realized_graph is not None
 
                 input_dict = dataset.record_to_swarm_input(record)
+                print("input_dict:", input_dict)
+                if edge_network_enable:
+                    realized_graph, log_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
+                else:
+                    realized_graph, log_prob = self._swarm.connection_dist.realize(
+                        self._swarm.composite_graph,
+                        # temperature=3.0, # DEBUG
+                        )
                 print(input_dict)
 
                 future_answer = self._swarm.arun(input_dict, realized_graph)
@@ -206,6 +215,7 @@ class Evaluator():
             num_iters: int,
             lr: float,
             batch_size: int = 4,
+            edge_network_enable: bool = False,
             ) -> torch.Tensor:
 
         assert self._swarm is not None
@@ -244,13 +254,14 @@ class Evaluator():
             log_probs = []
             correct_answers = []
             for i_record, record in zip(range(batch_size), loader):
-
-                realized_graph, log_prob = self._swarm.connection_dist.realize(
-                    self._swarm.composite_graph,
-                    # temperature=3.0, # DEBUG
-                    )
-
                 input_dict = dataset.record_to_swarm_input(record)
+                if edge_network_enable:
+                    realized_graph, log_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
+                else:
+                    realized_graph, log_prob = self._swarm.connection_dist.realize(
+                        self._swarm.composite_graph,
+                        # temperature=3.0, # DEBUG
+                        )
                 answer = self._swarm.arun(input_dict, realized_graph)
                 future_answers.append(answer)
                 log_probs.append(log_prob)
@@ -264,7 +275,10 @@ class Evaluator():
             loss_list: List[torch.Tensor] = []
             utilities: List[float] = []
             for raw_answer, log_prob, correct_answer in zip(raw_answers, log_probs, correct_answers):
+                print("Raw answer:", raw_answer)
+                print("Correct answer:", correct_answer)
                 answer = dataset.postprocess_answer(raw_answer)
+                print("Postprocessed answer:", answer)
                 assert isinstance(correct_answer, str), \
                     f"String expected but got {correct_answer} of type {type(correct_answer)} (1)"
                 accuracy = Accuracy()
@@ -281,14 +295,20 @@ class Evaluator():
             print("loss:", total_loss.item())
             optimizer.zero_grad()
             total_loss.backward()
-            print("Grad:", self._swarm.connection_dist.edge_logits.grad)
-            optimizer.step()
+            if edge_network_enable:
+                print("Grad: ", self._swarm.connection_dist.model.linear.weight.grad)
+                print("Grad: ", self._swarm.connection_dist.model.linear.bias.grad)
+                optimizer.step()
+            else:
+                print("Grad:", self._swarm.connection_dist.edge_logits.grad)
 
-            print("edge_logits:", self._swarm.connection_dist.edge_logits)
-            edge_probs = torch.sigmoid(self._swarm.connection_dist.edge_logits)
-            print("edge_probs:", edge_probs)
+                print("edge_logits:", self._swarm.connection_dist.edge_logits)
+                optimizer.step()
+                
+                edge_probs = torch.sigmoid(self._swarm.connection_dist.edge_logits)
+                print("edge_probs:", edge_probs)
 
-            self._print_conns(edge_probs)
+                self._print_conns(edge_probs)
 
             if self._logger is not None:
                 self._logger.add_scalar("train/loss", total_loss.item(), i_iter)
@@ -304,5 +324,9 @@ class Evaluator():
             self._print_conns(edge_probs, save_to_file=True)
 
         print("Done!")
-        edge_probs = torch.sigmoid(self._swarm.connection_dist.edge_logits)
-        return edge_probs
+        if not(edge_network_enable):
+            print("Edge probs:", edge_probs)
+            edge_probs = torch.sigmoid(self._swarm.connection_dist.edge_logits)
+            return edge_probs
+        else:
+            return None

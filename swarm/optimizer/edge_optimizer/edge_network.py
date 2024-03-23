@@ -19,9 +19,10 @@ class EdgeNetwork(nn.Module):
         self.llm_backbone = AutoModel.from_pretrained(llm_backbone_name)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_backbone_name)
         #add padding to stop hf from giving me warnings
-        self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
-        self.llm_backbone.resize_token_embeddings(len(self.tokenizer))  # Resize token embeddings
-        #freeze the backbone
+        if llm_backbone_name.lower() == "gpt2":
+            self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+            self.llm_backbone.resize_token_embeddings(len(self.tokenizer))  # Resize token embeddings
+            #freeze the backbone
         for param in self.llm_backbone.parameters():
             param.requires_grad = False
         self.linear = nn.Linear(self.llm_backbone.config.hidden_size, num_edges)
@@ -34,7 +35,7 @@ class EdgeNetwork(nn.Module):
 
     def forward(self, input_text):
         # Move input to GPU
-        input_ids = self.tokenizer.batch_encode_plus(input_text, padding=True, truncation=True, return_tensors='pt')['input_ids'].to(self.device)
+        input_ids = self.tokenizer.batch_encode_plus(input_text, padding=True, return_tensors='pt')['input_ids'].to(self.device)
         llm_bare_output = self.llm_backbone(input_ids)
         llm_output = llm_bare_output.last_hidden_state
         llm_output = llm_output[0][-1]
