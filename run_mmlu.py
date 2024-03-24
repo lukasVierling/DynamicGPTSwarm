@@ -119,15 +119,16 @@ async def main():
 
         num_iters = 5 if debug else args.num_iterations
 
-        lr = 0.0001
+        lr = 0.1 #change this for different experiments
 
         edge_probs = await evaluator.optimize_swarm(num_iters=num_iters, lr=lr, edge_network_enable=edge_network_enable)
-
-        score = await evaluator.evaluate_swarm(
-            mode='edge_network',
-            edge_probs=edge_probs,
-            limit_questions=limit_questions,
-            edge_network_enable=True
+        mode = 'edge_network' if edge_network_enable else 'external_edge_probs_swarm'
+        if edge_network_enable:
+            score = await evaluator.evaluate_swarm(
+                mode=mode,
+                edge_probs=edge_probs,
+                limit_questions=limit_questions,
+                edge_network_enable=edge_network_enable
             )
     else:
         raise Exception(f"Unsupported mode {mode}")
