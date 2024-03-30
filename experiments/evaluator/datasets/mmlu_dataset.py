@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 from typing import Union, List, Literal
 import numpy as np
+import json
 import re
 
 from experiments.evaluator.datasets.base_dataset import BaseDataset, SwarmInput
@@ -91,6 +92,30 @@ class MMLUDataset(BaseDataset):
 
             #answer = answer[0] # Try to format the answer by taking the first letter
         return answer
+
+    def postprocess_answer_list(self, answer: Union[str, List[str]]) -> List[str]:
+        if isinstance(answer, list):
+            if len(answer) > 0:
+                answer = answer[0]
+            else:
+                answer = ""
+        if not isinstance(answer, str):
+            raise Exception("Expected string")
+
+        if len(answer) > 0:
+            # Find the JSON-formatted part
+            json_start = answer.find('{')
+            json_end = answer.find('}') + 1
+            json_part = answer[json_start:json_end]
+
+            # Parse the JSON-formatted part
+            parsed_json = json.loads(json_part)
+
+            # Extract the letter
+            letter = parsed_json['answer']
+
+            #answer = answer[0] # Try to format the answer by taking the first letter
+        return letter
 
     @staticmethod
     def record_to_target_answer(record: pd.DataFrame) -> str:

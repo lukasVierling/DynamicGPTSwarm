@@ -72,6 +72,7 @@ class FinalDecision(Node):
                        **kwargs) -> None:
 
         node_inputs = self.process_input(inputs)
+        print("FinalDecision Inputs: ", node_inputs)
         prompt = None
         response = None
 

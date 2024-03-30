@@ -139,7 +139,7 @@ class Node(ABC):
                     self.outputs.extend(result)
                 else:
                     logger.error(f"Node {type(self).__name__} failed to execute due to: {result.__class__.__name__}: {result}")
-
+        print(self.outputs)
     @abstractmethod
     async def _execute(self, input, **kwargs):
         """ To be overriden by the descendant class """

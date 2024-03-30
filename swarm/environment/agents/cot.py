@@ -26,6 +26,6 @@ class COT(Graph):
 
         self.input_nodes = [thoughts[0]]
         self.output_nodes = [thoughts[-1]]
-
+        
         for thought in thoughts:
             self.add_node(thought)

@@ -80,5 +80,5 @@ class CoTStep(Node):
             outputs.append(execution)
             self.memory.add(self.id, execution)
             # self.log()
-
         return outputs 
+    

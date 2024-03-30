@@ -73,7 +73,7 @@ async def main():
         M = N
         #agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
 
-        agent_name_list = ["MMLUReflection","CoT","IO"]
+        agent_name_list = ["COT"]
 
         #swarm_name = f"{N}true_{M}adv"
 

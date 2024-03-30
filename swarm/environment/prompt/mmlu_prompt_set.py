@@ -19,7 +19,21 @@ class MMLUPromptSet(PromptSet):
 
     @staticmethod
     def get_constraint():
-        return """
+        return """I will ask you a question. 
+        I wil lalso give you 4 answers enumerated as A, B, C, and D.
+        Only one answer out of the offered 4 is correct. 
+        You must choose the correct answer to the question.
+        Answer with only a single letter (A, B, C, or D).
+        Do not include any other information in your answer except the letter.
+        Your response should be in Jason format, with the key "answer" and the value being one of the 4 letters: A, B, C, or D, corresponding to the correct answer.
+        Here is an example of the correct format:
+        {
+            "answer": "A"
+        }
+"""
+    
+    
+        """
             I will ask you a question.
             I will also give you 4 answers enumerated as A, B, C and D.
             Only one answer out of the offered 4 is correct.

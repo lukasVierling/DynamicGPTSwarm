@@ -4,13 +4,13 @@
 from typing import Optional
 
 from swarm.graph import Graph
-from swarm.environment.operations.reflect import Reflect as Reflection
+from swarm.environment.operations.mmlu.reflection_mmlu import Reflection
 from swarm.environment.operations.direct_answer import DirectAnswer as GreedySteps
 from swarm.environment.agents.agent_registry import AgentRegistry
 
 
 @AgentRegistry.register('MMLUReflection')
-class CrosswordsReflection(Graph):
+class MMLUReflection(Graph):
     def __init__(self, domain: str, model_name: Optional[str] = None, meta_prompt: bool = False, num_reflections=1, num_inner_iters=2):
         self.num_reflections = num_reflections
         self.num_inner_iters = num_inner_iters
