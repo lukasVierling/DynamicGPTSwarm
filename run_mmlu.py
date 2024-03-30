@@ -71,9 +71,14 @@ async def main():
     else:
         N = args.num_truthful_agents
         M = N
-        agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
+        #agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
 
-        swarm_name = f"{N}true_{M}adv"
+        agent_name_list = ["MMLUReflection","CoT","IO"]
+
+        #swarm_name = f"{N}true_{M}adv"
+
+        swarm_name = "MMLUReflection_CoT_IO"
+
 
         swarm = Swarm(
             agent_name_list,

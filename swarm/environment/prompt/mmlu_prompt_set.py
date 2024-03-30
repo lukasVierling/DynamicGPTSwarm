@@ -60,7 +60,10 @@ class MMLUPromptSet(PromptSet):
 
     @staticmethod
     def get_reflect_prompt(question, answer):
-        raise NotImplementedError
+        return f"""Reflect on the following question and answer:
+        Question: {question}
+        Answer: {answer}
+        What are your thoughts on the correctness and accuracy of the answer? Do you agree or disagree? Why? Please provide a brief explanation."""
 
     @staticmethod
     def get_combine_materials(materials: Dict[str, Any]) -> str:
