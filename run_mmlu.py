@@ -1,7 +1,8 @@
 import asyncio
 import os
 
-os.environ['CUDA_VISIBLE_DEVICES'] = "6,7"
+import pickle
+os.environ['CUDA_VISIBLE_DEVICES'] = "1,7"
 from typing import Union, Literal, Optional
 import argparse
 
@@ -71,13 +72,13 @@ async def main():
     else:
         N = args.num_truthful_agents
         M = N
-        #agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
+        agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
 
-        agent_name_list = ["COT"]
+        #agent_name_list = ["COT"]
 
-        #swarm_name = f"{N}true_{M}adv"
+        swarm_name = f"{N}true_{M}adv"
 
-        swarm_name = "MMLUReflection_CoT_IO"
+        #swarm_name = "MMLUReflection_CoT_IO"
 
 
         swarm = Swarm(
@@ -124,19 +125,25 @@ async def main():
 
         num_iters = 5 if debug else args.num_iterations
 
-        lr = 0.1 #change this for different experiments
+        lr = 0.1#0.0001 #change this for different experiments
 
         edge_probs = await evaluator.optimize_swarm(num_iters=num_iters, lr=lr, edge_network_enable=edge_network_enable)
         mode = 'edge_network' if edge_network_enable else 'external_edge_probs_swarm'
-        if edge_network_enable:
-            score = await evaluator.evaluate_swarm(
-                mode=mode,
-                edge_probs=edge_probs,
-                limit_questions=limit_questions,
-                edge_network_enable=edge_network_enable
-            )
+        score = await evaluator.evaluate_swarm(
+            mode=mode,
+            edge_probs=edge_probs,
+            limit_questions=limit_questions,
+            edge_network_enable=edge_network_enable
+        )
+        #store the swarm in result folder
+        
     else:
         raise Exception(f"Unsupported mode {mode}")
+    
+    if not os.path.exists("result/mmlu"):
+        os.makedirs("result/mmlu")
+    with open(f"result/mmlu/{tag}.pkl", "wb") as f:
+        pickle.dump(swarm, f) #store the swarm in result folder
 
     print(f"Score: {score}")
 

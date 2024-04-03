@@ -82,3 +82,7 @@ class MMLUPromptSet(PromptSet):
     @staticmethod
     def get_combine_materials(materials: Dict[str, Any]) -> str:
         return get_combine_materials(materials)
+    
+    @staticmethod
+    def get_task_with_hint(task, hint):
+        return f"{task}. Reflection on previous output: {hint}"

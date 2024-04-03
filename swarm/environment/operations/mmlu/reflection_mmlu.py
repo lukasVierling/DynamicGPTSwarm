@@ -59,10 +59,11 @@ class Reflection(Node):
                     Message(role="user", content=prompt)]
             
             response = await self.llm.agen(message)
+            new_task = self.prompt_set.get_task_with_hint(input["task"],response) #we include the hint inside the task for the next greedy step
             self.memory.add(self.id, {"operation": self.node_name,
                             #"task_id": input["task_id"], 
 
-                            "task": input["task"], 
+                            "task": new_task, 
                             "files": input.get("files", []),
                             "input": input.get("output", None), 
                             "subtask": prompt,

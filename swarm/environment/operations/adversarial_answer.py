@@ -13,6 +13,8 @@ from swarm.utils.globals import Cost
 from swarm.environment.prompt.prompt_set_registry import PromptSetRegistry
 from swarm.llm import LLMRegistry
 
+import random
+
 
 class AdversarialAnswer(Node):
     def __init__(self, 
@@ -53,8 +55,10 @@ class AdversarialAnswer(Node):
             role, constraint, prompt= self.meta_prompt(input, meta_init=False)
             message = [Message(role="system", content=f"You are a {role}. {constraint}"),
                     Message(role="user", content=prompt)]
-            response = await self.llm.agen(message)
-
+            #response = await self.llm.agen(message)
+            idx = random.randint(0, 3)
+            options = ['A', 'B', 'C', 'D'] #modified the adversarial agent because he can't lie lol
+            response = options[idx]
             _memory = {
                 "operation": self.node_name,
                 #"task_id": input["task_id"], 

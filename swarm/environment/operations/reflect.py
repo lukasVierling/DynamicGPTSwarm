@@ -37,7 +37,7 @@ class Reflect(Node):
         role = self.prompt_set.get_role()
         constraint = self.prompt_set.get_constraint()
 
-        subtask = input['subtask']
+        subtask = input['task']
         answer = input['output']
         prompt = self.prompt_set.get_reflect_prompt(question=subtask, answer=answer)
 
@@ -59,10 +59,13 @@ class Reflect(Node):
                     Message(role="user", content=prompt)]
             
             response = await self.llm.agen(message)
+
+            new_task = self.prompt_set.get_task_with_hint(input['task'], response)
+
             self.memory.add(self.id, {"operation": self.node_name,
                             #"task_id": input["task_id"], 
 
-                            "task": input["task"], 
+                            "task": new_task, 
                             "files": input.get("files", []),
                             "input": input.get("output", None), 
                             "subtask": prompt,

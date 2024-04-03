@@ -201,7 +201,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
             addable_if_not_used_learned_order = (not use_learned_order) and (not _graph.check_cycle(in_node, {out_node}, set()))
             if addable_if_not_used_learned_order or addable_if_use_learned_order:
                 edge_prob = torch.sigmoid(edge_logit / temperature)
-                print("Edge porb: ",edge_prob)
+                #print("Edge porb: ",edge_prob)
                 if threshold:
                     edge_prob = torch.tensor(1 if edge_prob > threshold else 0)
                 if torch.rand(1) < edge_prob:
@@ -212,7 +212,8 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                     log_probs.append(torch.log(1 - edge_prob))
 
         log_prob = torch.sum(torch.stack(log_probs))
-        return _graph, log_prob
+        edge_probs = torch.sigmoid(edge_logits / temperature)
+        return _graph, log_prob, edge_probs #not supposed to reutn log_probs #TODO
     
     def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
         _graph = deepcopy(graph)

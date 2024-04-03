@@ -84,14 +84,51 @@ class MMLUDataset(BaseDataset):
             raise Exception("Expected string")
 
         if len(answer) > 0:
-            match = re.search(r'\b([A-D])\b', answer)
-            if match:
-                return match.group(1)
-            else:
-                return ""
+            # Find the JSON-formatted part
+            json_start = answer.find('{')
+            json_end = answer.find('}') + 1
+            json_part = answer[json_start:json_end]
+
+            # Parse the JSON-formatted part
+            parsed_json = json.loads(json_part)
+
+            # Extract the letter
+            letter = parsed_json['answer']
 
             #answer = answer[0] # Try to format the answer by taking the first letter
-        return answer
+        return letter
+    
+    @staticmethod
+    def postprocess_answer(answer: Union[str, List[str]]) -> str:
+        letter = ""
+        if isinstance(answer, list):
+            if len(answer) > 0:
+                answer = answer[0]
+            else:
+                answer = ""
+        if not isinstance(answer, str):
+            raise Exception("Expected string")
+
+        if len(answer) > 0:
+            if answer in ['A', 'B', 'C', 'D']:
+                letter = answer
+            else:
+                # Find the JSON-formatted part
+                json_start = answer.find('{')
+                json_end = answer.find('}') + 1
+                json_part = answer[json_start:json_end]
+
+                # Parse the JSON-formatted partsorte
+                if json_part:
+                    parsed_json = json.loads(json_part)
+
+                    # Extract the letter
+                    letter = parsed_json['answer']
+                else:
+                    letter = ''
+
+            #answer = answer[0] # Try to format the answer by taking the first letter
+        return letter
 
     def postprocess_answer_list(self, answer: Union[str, List[str]]) -> List[str]:
         if isinstance(answer, list):

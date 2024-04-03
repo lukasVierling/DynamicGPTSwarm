@@ -15,6 +15,8 @@ from swarm.utils.log import logger, swarmlog
 from swarm.utils.globals import Cost
 from swarm.environment.operations.operation_registry import OperationRegistry
 
+from experiments.evaluator.datasets.mmlu_dataset import MMLUDataset
+
 
 class MergingStrategy(Enum):
     OutputsAsReferences = 0
@@ -88,8 +90,11 @@ class FinalDecision(Node):
             if len(inputs) == 0:
                 raise Exception("No inputs is not supported for MajorityVote")
             answers = [input.get("output") for input in inputs]
+            if self.domain == "mmlu":
+                answers = [MMLUDataset.postprocess_answer(answer) for answer in answers]
             counter = Counter(answers)
             sorted_counter = counter.most_common()
+            print("sorted counter: ",sorted_counter)
             max_freq = sorted_counter[0][1]
             equally_frequent_answers = [ans for ans, freq in sorted_counter if freq == max_freq]
             response = random.choice(equally_frequent_answers)

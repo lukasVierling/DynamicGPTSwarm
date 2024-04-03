@@ -69,7 +69,7 @@ class Evaluator():
                     break
 
             input_dict = dataset.record_to_swarm_input(record)
-            print(input_dict)
+            #print(input_dict)
 
             raw_answer = await io_agent.run(input_dict)
 
@@ -151,7 +151,7 @@ class Evaluator():
                 #assert realized_graph is not None
 
                 input_dict = dataset.record_to_swarm_input(record)
-                print("input_dict:", input_dict)
+                #print("input_dict:", input_dict)
                 if edge_network_enable:
                     realized_graph, log_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
                 else:
@@ -159,7 +159,7 @@ class Evaluator():
                         self._swarm.composite_graph,
                         # temperature=3.0, # DEBUG
                         )
-                print(input_dict)
+                #print(input_dict)
 
                 future_answer = self._swarm.arun(input_dict, realized_graph)
                 future_answers.append(future_answer)
