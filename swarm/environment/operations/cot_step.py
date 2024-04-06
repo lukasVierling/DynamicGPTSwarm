@@ -37,7 +37,7 @@ class CoTStep(Node):
             if self.is_last_step:
                 system_prompt = (
                     f"You are {role}. {constraint}. "
-                    "Answer taking into consideration the provided sequence "
+                    "Answer taking into consideration the provided sequence " #maybe modify the following prompt in case output format is not satisfying
                     "of thoughts on the question at hand.")
             else:
                 system_prompt = (

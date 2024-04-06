@@ -1,8 +1,9 @@
 import asyncio
 import os
+import time
 
 import pickle
-os.environ['CUDA_VISIBLE_DEVICES'] = "1,7"
+os.environ['CUDA_VISIBLE_DEVICES'] = "1,3"
 from typing import Union, Literal, Optional
 import argparse
 
@@ -26,7 +27,7 @@ def parse_args():
     parser.add_argument('--num-iterations', type=int, default=200,
                         help="Number of optimization iterations. Default 200.")
 
-    parser.add_argument('--model_name', type=str, default=None,
+    parser.add_argument('--model_name', type=str, default="CustomLLM",
                         help="Model name, None runs the default ChatGPT4.")
 
     parser.add_argument('--domain', type=str, default="mmlu",
@@ -92,7 +93,7 @@ async def main():
             llm_backbone_name="google/gemma-2B"
         )
 
-    tag = f"{domain}_{swarm_name}_{strategy.name}_{mode}"
+    tag = f"{domain}_{swarm_name}_{strategy.name}_{mode}_{time.time()}"
 
     download()
 
@@ -123,9 +124,11 @@ async def main():
             limit_questions=limit_questions)
     elif mode == 'OptimizedSwarm':
 
-        num_iters = 5 if debug else args.num_iterations
-
-        lr = 0.1#0.0001 #change this for different experiments
+        num_iters = 3 if debug else args.num_iterations
+        if edge_network_enable:
+            lr = 0.0001 #0.001
+        else: 
+            lr = 0.1
 
         edge_probs = await evaluator.optimize_swarm(num_iters=num_iters, lr=lr, edge_network_enable=edge_network_enable)
         mode = 'edge_network' if edge_network_enable else 'external_edge_probs_swarm'

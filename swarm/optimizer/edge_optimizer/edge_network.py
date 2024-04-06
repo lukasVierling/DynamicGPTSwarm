@@ -26,7 +26,8 @@ class EdgeNetwork(nn.Module):
         for param in self.llm_backbone.parameters():
             param.requires_grad = False
         self.linear = nn.Linear(self.llm_backbone.config.hidden_size, num_edges)
-        nn.init.zeros_(self.linear.weight)
+        #nn.init.zeros_(self.linear.weight) TODO uncomment but let's see what happens with initialization of the weights
+        #print(self.linear.weight)
         bias = torch.full((num_edges,), torch.log(torch.tensor(initial_probability / (1 - initial_probability))))
         with torch.no_grad():
             self.linear.bias.copy_(bias)
