@@ -65,11 +65,18 @@ class Swarm:
         self.composite_graph = CompositeGraph(decision_method,
                                               self.domain, self.model_name)
         potential_connections = []
-
-        for agent_name in self.agent_names:
+        # if model_name is a string then create a list of length len(agent_names) with all elements equal to model_name, if it's a list then repeat it to length(agent_names) and cut it to length(agent_names)
+        if isinstance(self.model_name, str):
+            self.model_name = [self.model_name] * len(self.agent_names)
+        elif isinstance(self.model_name, list):
+            self.model_name = (self.model_name * max(1,(len(self.agent_names) // len(self.model_name))))[:len(self.agent_names)]
+        else:
+            raise ValueError(f"model_name should be a string or a list of strings, got {self.model_name}")
+        
+        for agent_name, model_name in zip(self.agent_names, self.model_name):
             if agent_name in AgentRegistry.registry:
                 agent_instance = AgentRegistry.get(agent_name,
-                                                   self.domain, self.model_name)
+                                                   self.domain, model_name)
                 if not include_inner_agent_connections:
                     for node in agent_instance.nodes:
                         for successor in agent_instance.nodes[node].successors:
@@ -80,7 +87,6 @@ class Swarm:
             else:
                 logger.error(f"Cannot find {agent_name} in the list of registered agents "
                              f"({list(AgentRegistry.keys())})")
-        
         potential_connections = []
         if self.edge_optimize:  
             # Add bi-directional connections between all nodes of all agents (except for the decision nodes).
