@@ -2,6 +2,8 @@
 models/
 result/
 gemma-Code-Instruct-Finetune-test/
+dataset/CMMLU/data
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -185,10 +187,10 @@ vscode/
 # vis
 result/example.html
 example.html
-datasets/gaia/test_files/
-datasets/gaia/val_files
-datasets/gaia/*.json
-datasets/gaia/utils/*.jsonl
+dataset/gaia/test_files/
+dataset/gaia/val_files
+dataset/gaia/*.json
+dataset/gaia/utils/*.jsonl
 
 /runs/
 
