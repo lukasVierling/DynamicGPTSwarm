@@ -11,7 +11,7 @@ from swarm.graph.swarm import Swarm
 @pytest.mark.filterwarnings("ignore:PytestAssertRewriteWarning")
 def test_swarm(model_name: Optional[str]):
     task = "Tell me more about this image and summarize it in 3 sentences."
-    files = ["./datasets/demos/js.png"]
+    files = ["./dataset/demos/js.png"]
     inputs = {"task": task, "files": files}
 
     for agent_list in (

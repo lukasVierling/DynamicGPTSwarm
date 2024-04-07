@@ -40,7 +40,7 @@ def load_config(config_path):
 def parse_args():
     parser = argparse.ArgumentParser(description="GPTSwarm Experiments on HumanEval")
     parser.add_argument("--config", type=str, help="Path to configuration YAML file.")
-    parser.add_argument("--dataset_json", type=str, default="datasets/humaneval/humaneval-py.jsonl")
+    parser.add_argument("--dataset_json", type=str, default="dataset/humaneval/humaneval-py.jsonl")
     parser.add_argument("--result_file", type=str, default=None)
     parser.add_argument("--llm", type=str, default="gpt-4-1106-preview")
     parser.add_argument("--learn_prompt", type=bool, default=False)

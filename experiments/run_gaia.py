@@ -39,8 +39,8 @@ async def main():
     parser.add_argument("--config", type=str, help="Path to configuration YAML file.")
     parser.add_argument("--domain", type=str, default="gaia")
     parser.add_argument("--agents", nargs='+', default=["IO"])
-    parser.add_argument("--dataset_json", type=str, default="datasets/gaia/level_1_val.json") #level_1_val_solveable.json
-    parser.add_argument("--dataset_files", type=str, default="datasets/gaia/val_files")
+    parser.add_argument("--dataset_json", type=str, default="dataset/gaia/level_1_val.json") #level_1_val_solveable.json
+    parser.add_argument("--dataset_files", type=str, default="dataset/gaia/val_files")
     parser.add_argument("--result_file", type=str, default=None)
     parser.add_argument("--llm", type=str, default="gpt-4-1106-preview") #gpt-4-1106-preview  gpt-3.5-turbo-1106 gpt-3.5-turbo gpt-4
     args = parser.parse_args()

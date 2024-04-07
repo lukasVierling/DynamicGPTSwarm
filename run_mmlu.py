@@ -11,7 +11,7 @@ from swarm.graph.swarm import Swarm
 from swarm.environment.operations.final_decision import MergingStrategy
 from experiments.evaluator.evaluator import Evaluator
 from experiments.evaluator.datasets.mmlu_dataset import MMLUDataset
-from datasets.MMLU.download import download
+from dataset.MMLU.download import download
 
 
 def parse_args():
@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--num-iterations', type=int, default=200,
                         help="Number of optimization iterations. Default 200.")
 
-    parser.add_argument('--model_name', type=str, default="CustomLLM",
+    parser.add_argument('--model_name', type=str, default="google/gemma-7B-it",
                         help="Model name, None runs the default ChatGPT4.")
 
     parser.add_argument('--domain', type=str, default="mmlu",
@@ -53,8 +53,6 @@ async def main():
 
     edge_network_enable = args.edge_network_enable
 
-    #temp
-    model_name = "CustomLLM"
 
     mode: Union[Literal['DirectAnswer'],
                 Literal['FullConnectedSwarm'],

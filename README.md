@@ -84,7 +84,7 @@ answer = await swarm.arun(inputs)
 from swarm.graph.swarm import Swarm
 swarm = Swarm(["IO", "TOT"], "gaia")
 task = "Tell me more about this image and summarize it in 3 sentences."
-files = ["./datasets/demos/js.png"]
+files = ["./dataset/demos/js.png"]
 inputs = {"task": task, "files": files}
 danswer = swarm.run(inputs)
 ```

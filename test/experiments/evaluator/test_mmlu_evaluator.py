@@ -5,7 +5,7 @@ from swarm.graph.swarm import Swarm
 from swarm.environment.operations.final_decision import MergingStrategy
 from experiments.evaluator.evaluator import Evaluator
 from experiments.evaluator.datasets.mmlu_dataset import MMLUDataset
-from datasets.MMLU.download import download
+from dataset.MMLU.download import download
 
 
 @pytest.fixture

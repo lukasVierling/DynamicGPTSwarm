@@ -24,12 +24,12 @@ Follow the format provided in these SAMPLES:
 START
 ====
 Task: Provide a comprehensive introduction to GPTSwarm and identify if any websites are discussing it.
-Files: ["./datasets/demos/gptswarm.txt"]
+Files: ["./dataset/demos/gptswarm.txt"]
 ----
-Plan: Begin by using the Reader to load "./datasets/demos/gptswarm.txt" for detailed information, followed by a Websearch to find information using the keyword "GPTSwarm."
+Plan: Begin by using the Reader to load "./dataset/demos/gptswarm.txt" for detailed information, followed by a Websearch to find information using the keyword "GPTSwarm."
 ----
 Operations, Purposes and Inputs:
-1. Reader ### To load and analyze the file for relevant information ### Files: ["./datasets/demos/gptswarm.txt"]
+1. Reader ### To load and analyze the file for relevant information ### Files: ["./dataset/demos/gptswarm.txt"]
 2. Search ### To find information related to "GPTSwarm" ### Keywords: ["GPTSwarm Introduction"]
 3. Thought ### To complete the task using gathered information ### Inputs: ["DYNAMIC_CHANGE"]
 ====

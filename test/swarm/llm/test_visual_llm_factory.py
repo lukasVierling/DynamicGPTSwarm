@@ -10,7 +10,7 @@ def test_llm_factory():
     ):
         llm = VisualLLMRegistry.get(**factory_kwargs)
         task = "Describe this image in details."
-        file_path = "datasets/demos/js.png"
+        file_path = "dataset/demos/js.png"
         answer = llm.gen(task, file_path)
         assert isinstance(answer, str)
         assert len(answer) > 0

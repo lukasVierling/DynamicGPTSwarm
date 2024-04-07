@@ -5,6 +5,7 @@ from class_registry import ClassRegistry
 
 from swarm.llm.llm import LLM
 
+CUSTOM_LLMS = ["google/gemma-7B-it","vivo-ai/BlueLM-7B-Chat"]
 
 class LLMRegistry:
     registry = ClassRegistry()
@@ -24,9 +25,9 @@ class LLMRegistry:
 
         if model_name == 'mock':
             model = cls.registry.get(model_name)
-        elif model_name == "CustomLLM":
+        elif model_name in CUSTOM_LLMS:
             # for custom model get the smalle gemma model and run on our gpus
-            model = cls.registry.get('CustomLLM')
+            model = cls.registry.get('CustomLLM', model_name)
         else: # any version of GPTChat like "gpt-4-1106-preview"
             model = cls.registry.get('GPTChat', model_name)
 

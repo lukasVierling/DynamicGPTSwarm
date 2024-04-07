@@ -32,7 +32,7 @@ def batched_evaluator_withEdgeNetwork(evaluator, batch_size, swarm, loop):
 
 
 if __name__ == "__main__":
-    file_path = "datasets/crosswords/mini0505_0_100_5.json"
+    file_path = "dataset/crosswords/mini0505_0_100_5.json"
     with open(file_path, "r") as file:
         test_data = json.load(file)
 

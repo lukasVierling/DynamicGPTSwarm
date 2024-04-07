@@ -15,7 +15,7 @@ class MMLUDataset(BaseDataset):
 
         self._split = split
 
-        data_path = f"datasets/MMLU/data/{self._split}/"
+        data_path = f"dataset/MMLU/data/{self._split}/"
         self._total_df: pd.DataFrame = self._load_data(data_path)
 
     @staticmethod

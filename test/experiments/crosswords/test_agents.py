@@ -8,7 +8,7 @@ from swarm.environment.agents.agent_registry import AgentRegistry
 
 @pytest.mark.asyncio
 async def test():
-    file_path = "datasets/crosswords/mini0505_0_100_5.json"
+    file_path = "dataset/crosswords/mini0505_0_100_5.json"
     with open(file_path, "r") as file:
         data = json.load(file)
     env = MiniCrosswordsEnv(data)

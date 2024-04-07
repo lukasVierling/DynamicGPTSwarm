@@ -7,7 +7,7 @@ import gradio as gr
 import pandas as pd
 import numpy as np
 
-from datasets import load_dataset
+from dataset import load_dataset
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import HfApi
 

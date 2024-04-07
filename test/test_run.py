@@ -9,16 +9,16 @@ from swarm.environment.operations import DirectAnswer, FileAnalyse, Reflect, Com
 def test_run():
 
     input = {"task": "Who invents the AGI definition? What's the first AGI's name?", 
-             "files": ["datasets/demos/agi.txt"]}
+             "files": ["dataset/demos/agi.txt"]}
     inputs = [{"operation": "DirectAnswer", 
                "task": "Who invents the AGI definition? What's the first AGI's name?", 
-               "files": ["datasets/demos/agi.txt"],
+               "files": ["dataset/demos/agi.txt"],
                "subtask": "Who invent AGI?",
                "output": "No one invent AGI."},
               {"operation": "FileAnalyse", 
                "task": "Who invents the AGI definition? What's the first AGI's name?", 
-               "files": ["datasets/demos/agi.txt"],
-               "subtask": "Read the content of ###['datasets/demos/agi.txt'], use query ###No one invent AGI.",
+               "files": ["dataset/demos/agi.txt"],
+               "subtask": "Read the content of ###['dataset/demos/agi.txt'], use query ###No one invent AGI.",
                "output": "However, the file content states: \"In 2050, AGI is widely used in daily life. SwarmX, a general-purpose AGI, originated from GPTSwarm.\""},
     ]
 

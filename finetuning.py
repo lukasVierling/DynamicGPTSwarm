@@ -7,7 +7,7 @@ import os
 os.environ['CUDA_VISIBLE_DEVICES'] = "1,7"
 import pandas as pd
 import torch
-from datasets import Dataset, load_dataset
+from dataset import Dataset, load_dataset
 from huggingface_hub import notebook_login
 from peft import LoraConfig, PeftModel
 from transformers import (
