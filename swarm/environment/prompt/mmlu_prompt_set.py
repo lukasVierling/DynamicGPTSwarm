@@ -9,6 +9,8 @@ from swarm.environment.prompt.common import get_combine_materials
 
 
 @PromptSetRegistry.register('mmlu')
+@PromptSetRegistry.register('cmmlu')
+@PromptSetRegistry.register('mixedmmlu')
 class MMLUPromptSet(PromptSet):
     """
     MMLU prompt set for the 4-option qestion answering.

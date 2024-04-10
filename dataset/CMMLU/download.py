@@ -16,14 +16,14 @@ def download():
 
     for task in task_list:
         for split in ['dev', 'test']:
-            split_path = os.path.join(data_path, split, task)
+            split_path = os.path.join(data_path, split)
             if not os.path.exists(split_path):
                 os.makedirs(split_path)
             csv_path = os.path.join(split_path, f"{task}.csv")
             if os.path.exists(csv_path):
                 #print(f"Dataset {task} already downloaded. Skipping.")
                 continue
-            dataset = load_dataset("haonan-li/cmmlu", task)
+            dataset = load_dataset("haonan-li/cmmlu", task, trust_remote_code=True)
             dataset[split].to_csv(csv_path)
             print(f"Saved to {csv_path}")
 

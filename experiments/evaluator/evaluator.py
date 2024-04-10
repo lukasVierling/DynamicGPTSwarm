@@ -170,6 +170,7 @@ class Evaluator():
 
             for raw_answer, record in zip(raw_answers, record_batch):
                 print("Raw answer:", raw_answer)
+                
                 answer = dataset.postprocess_answer(raw_answer)
                 print("Postprocessed answer:", answer)
                 correct_answer = dataset.record_to_target_answer(record)
@@ -262,10 +263,10 @@ class Evaluator():
                         self._swarm.composite_graph,
                         # temperature=3.0, # DEBUG
                         )
-                answer = self._swarm.arun(input_dict, realized_graph)
+                answer = self._swarm.arun(input_dict, realized_graph) #add dataset for further processing in later steps
                 future_answers.append(answer)
                 log_probs.append(log_prob)
-                correct_answer = dataset.record_to_target_answer(record)
+                correct_answer = dataset.record_to_target_answer(record) #should work the same way for both datasets
                 correct_answers.append(correct_answer)
 
             raw_answers = await asyncio.gather(*future_answers)
@@ -275,6 +276,7 @@ class Evaluator():
             loss_list: List[torch.Tensor] = []
             utilities: List[float] = []
             for raw_answer, log_prob, correct_answer in zip(raw_answers, log_probs, correct_answers):
+                
                 print("Raw answer:", raw_answer)
                 print("Correct answer:", correct_answer)
                 answer = dataset.postprocess_answer(raw_answer)

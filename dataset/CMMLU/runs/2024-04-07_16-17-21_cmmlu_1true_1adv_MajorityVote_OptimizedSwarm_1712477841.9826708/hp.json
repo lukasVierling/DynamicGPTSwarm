@@ -1,0 +1,1 @@
+{"lr": 0.1, "batch_size": 4, "num_iters": 200, "model_name": "google/gemma-7B-it"}

@@ -18,25 +18,29 @@ from swarm.llm.price import cost_count
 from swarm.llm.llm import LLM
 from swarm.llm.llm_registry import LLMRegistry
 
+from swarm.utils.select_gpu import select_gpu
+
+
 @LLMRegistry.register('CustomLLM')
 
 class CustomLLM(LLM):
-    model = None
-    tokenizer = None
+    models = {}
+    tokenizers = {}
 
     def __init__(self, model_name: Optional[str] = "google/gemma-7B-it"):
         super().__init__()
         print(f"We are using custom LLM class, model_name: {model_name}")
         self.model_name = model_name
-        if CustomLLM.model is None:
+        if self.model_name not in CustomLLM.models:
             print("Load Model...")
-            CustomLLM.model = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch.bfloat16, trust_remote_code=True).to("cuda")
-           # CustomLLM.model = vllm_LLM(model="google/gemma-7B-it", dtype="half", max_model_len=5888)
-        if CustomLLM.tokenizer is None:
+            self.device = select_gpu()
+            CustomLLM.models[self.model_name] = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch.bfloat16, trust_remote_code=True).to(f"cuda:{self.device}")
+        if self.model_name not in CustomLLM.tokenizers:
             print("Load Tokenizer...")
-            CustomLLM.tokenizer = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, use_fast=False)
+            CustomLLM.tokenizers[self.model_name] = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, use_fast=False)
             if self.model_name == "vivo-ai/BlueLM-7B-Chat":
-                CustomLLM.tokenizer.apply_chat_template = BlueLM_apply_chat_template
+                CustomLLM.tokenizers[self.model_name].apply_chat_template = BlueLM_apply_chat_template
+
 
     def process_messages(self,messages: List[Message]) -> List[Message]:
         processed_messages = []
@@ -76,11 +80,11 @@ class CustomLLM(LLM):
             messages = [Message(role="user", content=messages)]
         else:
             messages = self.process_messages(messages)
-        #print a fancy console seperater
-        prompt = CustomLLM.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        prompt = CustomLLM.tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt").to("cuda") #add special token for blue apparently true...?
+        
+        prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{self.device}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
-        outputs = CustomLLM.model.generate(
+        outputs = self.models[self.model_name].generate(
             prompt,
             do_sample=True,
             max_length=max_tokens + prompt_len,
@@ -89,8 +93,10 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
-        output_text = CustomLLM.tokenizer.decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
-        return output_text
+        output_text = self.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
+        print("These are the outputs after generation: ")
+        print(output_text)
+        return output_text      
         '''
         sampling_params = SamplingParams(temperature=temperature, top_p=1, top_k=50,max_tokens=max_tokens)
         output = CustomLLM.model.generate(prompt, sampling_params, use_tqdm=False)
@@ -114,15 +120,17 @@ class CustomLLM(LLM):
         if num_comps is None:
             num_comps = self.DEFUALT_NUM_COMPLETIONS
 
+
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
+        else:
+            messages = self.process_messages(messages)
 
-        
 
-        prompt = CustomLLM.tokenizer.apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        prompt = CustomLLM.tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt").to("cuda")
+        prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
+        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{self.device}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
-        outputs = CustomLLM.model.generate(
+        outputs = self.models[self.model_name].generate(
             prompt,
             do_sample=True,
             max_length=max_tokens + prompt_len,
@@ -131,7 +139,8 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=1.0
         )
-        output_text = CustomLLM.tokenizer.decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
+        output_text = self.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
+        print(output_text)
         return output_text
 
 def BlueLM_apply_chat_template(messages, tokenize=False, add_generation_prompt=True, **kwargs):
@@ -142,9 +151,7 @@ def BlueLM_apply_chat_template(messages, tokenize=False, add_generation_prompt=T
         raise NotImplementedError("Tokenization not implemented for BlueLM")
     chat = ""
     for message in messages:
-        print(message)
         role, content = message.values()
-        print(role, content)
         if role == "user":
             chat += f"[|Human|]:{content}"
         elif role == "assistant":

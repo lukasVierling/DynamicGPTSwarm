@@ -3,7 +3,7 @@ import os
 import time
 
 import pickle
-os.environ['CUDA_VISIBLE_DEVICES'] = "1,3"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6,7"
 from typing import Union, Literal, Optional
 import argparse
 
@@ -12,6 +12,9 @@ from swarm.environment.operations.final_decision import MergingStrategy
 from experiments.evaluator.evaluator import Evaluator
 from experiments.evaluator.datasets.mmlu_dataset import MMLUDataset
 from dataset.MMLU.download import download
+from experiments.evaluator.datasets.cmmlu_dataset import CMMLUDataset
+from experiments.evaluator.datasets.mixedmmlu_dataset import MixedMMLUDataset
+from dataset.CMMLU.download import download as cmmlu_download
 
 
 def parse_args():
@@ -22,13 +25,16 @@ def parse_args():
                         help="Mode of operation. Default is 'OptimizedSwarm'.")
 
     parser.add_argument('--num-truthful-agents', type=int, default=1,
-                        help="Number of truthful agents. The total will be N truthful and N adversarial.")
+                        help="Number of truthful agents. The total will be N truthful and M adversarial.")
+    
+    parser.add_argument('--num-adversarial-agents', type=int, default=1, 
+                        help="Number of adversarial agents. The total will be N truthful and M adversarial.")
 
     parser.add_argument('--num-iterations', type=int, default=200,
                         help="Number of optimization iterations. Default 200.")
 
-    parser.add_argument('--model_name', type=str, default="google/gemma-7B-it",
-                        help="Model name, None runs the default ChatGPT4.")
+    parser.add_argument('--model_name', nargs='+', default=["google/gemma-7B-it"],
+                    help="Model names, None runs the default ChatGPT4.") #Models: "vivo-ai/BlueLM-7B-Chat", "google/gemma-7B-it" , "google/gemma-2B-it"
 
     parser.add_argument('--domain', type=str, default="mmlu",
                         help="Domain (the same as dataset name), default 'MMLU'")
@@ -65,12 +71,16 @@ async def main():
 
     domain: str = args.domain
 
+    #Hardcoding herer TODO
+    domain = "mixedmmlu"
+    
+
     if mode == 'DirectAnswer':
         swarm_name = None
         swarm = None
     else:
         N = args.num_truthful_agents
-        M = N
+        M = args.num_adversarial_agents
         agent_name_list = N * ["IO"] + M * ["AdversarialAgent"]
 
         #agent_name_list = ["COT"]
@@ -93,10 +103,22 @@ async def main():
 
     tag = f"{domain}_{swarm_name}_{strategy.name}_{mode}_{time.time()}"
 
-    download()
+    if domain == 'mmlu':
+        download()
+        dataset_train = MMLUDataset('dev')
+        dataset_val = MMLUDataset('val')
 
-    dataset_train = MMLUDataset('dev')
-    dataset_val = MMLUDataset('val')
+    elif domain == 'cmmlu':
+        cmmlu_download()
+        dataset_train = CMMLUDataset('dev')
+        dataset_val = CMMLUDataset('test') #double check this if we should use dev and test
+    elif domain == 'mixedmmlu':
+        download()
+        cmmlu_download()
+        dataset_train = MixedMMLUDataset('dev')
+        dataset_val = MixedMMLUDataset('test')
+    else:
+        raise Exception(f"Unsupported domain {domain}")
 
     evaluator = Evaluator(
         swarm,
@@ -137,6 +159,7 @@ async def main():
             edge_network_enable=edge_network_enable
         )
         #store the swarm in result folder
+        print(dataset_train.counter)
         
     else:
         raise Exception(f"Unsupported mode {mode}")
@@ -147,6 +170,8 @@ async def main():
         pickle.dump(swarm, f) #store the swarm in result folder
 
     print(f"Score: {score}")
+    #print the final edge probs
+    print(f"Edge Probs: {edge_probs}")
 
 
 if __name__ == "__main__":

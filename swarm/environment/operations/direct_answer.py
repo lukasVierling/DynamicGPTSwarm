@@ -55,6 +55,14 @@ class DirectAnswer(Node):
         
         node_inputs = self.process_input(inputs)
         outputs = []
+        '''
+        #check if inputs has "domain" key and if then get the prompt set for that domain
+        for input_dict in node_inputs:
+            if "domain" in input_dict:
+                prompt_set = PromptSetRegistry.get(input_dict["domain"])
+                break
+        
+        '''
 
         for input in node_inputs:
             task = input["task"]

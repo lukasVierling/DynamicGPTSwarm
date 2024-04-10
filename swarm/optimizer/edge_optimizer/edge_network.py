@@ -11,10 +11,12 @@ from swarm.graph.node import Node
 from swarm.graph.graph import Graph
 from swarm.graph.composite_graph import CompositeGraph
 
+from swarm.utils.select_gpu import select_gpu
+
 class EdgeNetwork(nn.Module):
     def __init__(self, llm_backbone_name, num_edges, initial_probability=0.5):
         #if cude available set self.device to cuda
-        self.device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.device = f"cuda:{select_gpu()}" if torch.cuda.is_available() else "cpu"
         super(EdgeNetwork, self).__init__()
         self.llm_backbone = AutoModel.from_pretrained(llm_backbone_name)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_backbone_name)

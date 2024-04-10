@@ -175,7 +175,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         if self.domain == "corsswords":    
             env = inputs["env"]
             prompt = [self.prompt_set.get_propose_prompt(env.render())]
-        elif self.domain == "mmlu":
+        elif self.domain in ['mmlu','mixedmmlu','cmmlu']:
             prompt = [inputs["task"]]
         
         edge_logits = self.model(prompt)
@@ -212,8 +212,8 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                     log_probs.append(torch.log(1 - edge_prob))
 
         log_prob = torch.sum(torch.stack(log_probs))
-        #edge_probs = torch.sigmoid(edge_logits)
-        return _graph, log_prob#, edge_probs #not supposed to reutn log_probs #TODO
+        edge_probs = torch.sigmoid(edge_logits)
+        return _graph, log_prob, edge_probs #not supposed to reutn log_probs #TODO
     
     def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
         _graph = deepcopy(graph)

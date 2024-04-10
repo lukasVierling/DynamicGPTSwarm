@@ -16,6 +16,8 @@ from swarm.utils.globals import Cost
 from swarm.environment.operations.operation_registry import OperationRegistry
 
 from experiments.evaluator.datasets.mmlu_dataset import MMLUDataset
+from experiments.evaluator.datasets.cmmlu_dataset import CMMLUDataset
+from experiments.evaluator.datasets.mixedmmlu_dataset import MixedMMLUDataset
 
 
 class MergingStrategy(Enum):
@@ -48,7 +50,7 @@ class FinalDecision(Node):
 
     def meta_prompt(self, node_inputs, meta_init=False):
 
-        self.prompt_set = PromptSetRegistry.get(self.domain)
+        self.prompt_set = PromptSetRegistry.get(self.domain) #kinda useless
         role = self.prompt_set.get_role()
         constraint = self.prompt_set.get_constraint()
 
@@ -92,6 +94,11 @@ class FinalDecision(Node):
             answers = [input.get("output") for input in inputs]
             if self.domain == "mmlu":
                 answers = [MMLUDataset.postprocess_answer(answer) for answer in answers]
+            if self.domain == "cmmlu":
+                answers = [CMMLUDataset.postprocess_answer(answer) for answer in answers]
+            if self.domain == "mixedmmlu":
+                answers = [MixedMMLUDataset.postprocess_answer(answer) for answer in answers]
+
             counter = Counter(answers)
             sorted_counter = counter.most_common()
             print("sorted counter: ",sorted_counter)
@@ -145,7 +152,7 @@ class FinalDecision(Node):
                         "input": inputs, 
                         "subtask": prompt,
                         "output": response,
-                        "format": "natural language"}
+                        "format": "natural language",} #to hanlde mixed data set in later postprocessing steps
 
         self.memory.add(self.id, executions)
         self.log()
