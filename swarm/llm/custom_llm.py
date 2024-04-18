@@ -26,6 +26,7 @@ from swarm.utils.select_gpu import select_gpu
 class CustomLLM(LLM):
     models = {}
     tokenizers = {}
+    devices = {}
 
     def __init__(self, model_name: Optional[str] = "google/gemma-7B-it"):
         super().__init__()
@@ -33,8 +34,8 @@ class CustomLLM(LLM):
         self.model_name = model_name
         if self.model_name not in CustomLLM.models:
             print("Load Model...")
-            self.device = select_gpu()
-            CustomLLM.models[self.model_name] = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch.bfloat16, trust_remote_code=True).to(f"cuda:{self.device}")
+            CustomLLM.devices[self.model_name] = select_gpu()
+            CustomLLM.models[self.model_name] = AutoModelForCausalLM.from_pretrained(self.model_name, torch_dtype=torch.bfloat16, trust_remote_code=True).to(f"cuda:{CustomLLM.devices[self.model_name]}")
         if self.model_name not in CustomLLM.tokenizers:
             print("Load Tokenizer...")
             CustomLLM.tokenizers[self.model_name] = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, use_fast=False)
@@ -82,7 +83,7 @@ class CustomLLM(LLM):
             messages = self.process_messages(messages)
         
         prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{self.device}") #add special token for blue apparently true...?
+        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name]}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
         outputs = self.models[self.model_name].generate(
             prompt,
@@ -128,7 +129,7 @@ class CustomLLM(LLM):
 
 
         prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
-        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{self.device}") #add special token for blue apparently true...?
+        prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name]}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
         outputs = self.models[self.model_name].generate(
             prompt,
@@ -140,7 +141,7 @@ class CustomLLM(LLM):
             top_p=1.0
         )
         output_text = self.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
-        print(output_text)
+
         return output_text
 
 def BlueLM_apply_chat_template(messages, tokenize=False, add_generation_prompt=True, **kwargs):

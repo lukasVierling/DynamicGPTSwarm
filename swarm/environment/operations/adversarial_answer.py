@@ -56,7 +56,8 @@ class AdversarialAnswer(Node):
             message = [Message(role="system", content=f"You are a {role}. {constraint}"),
                     Message(role="user", content=prompt)]
             #response = await self.llm.agen(message)
-            idx = random.randint(0, 3)
+            #idx = random.randint(0, 3) to support random decision
+            idx = 0 #always say A no matter the question
             options = ['A', 'B', 'C', 'D'] #modified the adversarial agent because he can't lie lol
             response = options[idx]
             _memory = {

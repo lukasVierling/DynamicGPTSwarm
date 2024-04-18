@@ -83,6 +83,7 @@ class EdgeWiseDistribution(ConnectDistribution):
                 in_degrees[successor.id] -= 1
         return ranks, torch.sum(torch.stack(log_probs))
 
+
     def realize(self,
                 graph: CompositeGraph,
                 temperature: float = 1.0, # must be >= 1.0
@@ -163,6 +164,17 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         self.order_params = torch.nn.Parameter(order_tensor)
         self.domain = domain
         self.prompt_set = PromptSetRegistry.get(domain)
+        
+    def get_edge_probs(self, 
+                       graph: CompositeGraph,
+                       inputs: dict=None) -> torch.Tensor:
+        if self.domain == "crosswords":
+            env = inputs["env"]
+            prompt = [self.prompt_set.get_propose_prompt(env.render())]
+        elif self.domain in ['mmlu','mixedmmlu','cmmlu']:
+            prompt = [inputs["task"]]
+        return torch.sigmoid(self.model(prompt).reshape(-1))
+
 
     def realize(self,
                 graph: CompositeGraph,
@@ -172,7 +184,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                 inputs: dict = None,
                 ) -> Tuple[CompositeGraph, torch.Tensor]:
         # Compute edge_logits using the model
-        if self.domain == "corsswords":    
+        if self.domain == "crosswords":    
             env = inputs["env"]
             prompt = [self.prompt_set.get_propose_prompt(env.render())]
         elif self.domain in ['mmlu','mixedmmlu','cmmlu']:
@@ -213,7 +225,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
 
         log_prob = torch.sum(torch.stack(log_probs))
         edge_probs = torch.sigmoid(edge_logits)
-        return _graph, log_prob, edge_probs #not supposed to reutn log_probs #TODO
+        return _graph, log_prob#, edge_probs #not supposed to reutn log_probs #TODO
     
     def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
         _graph = deepcopy(graph)

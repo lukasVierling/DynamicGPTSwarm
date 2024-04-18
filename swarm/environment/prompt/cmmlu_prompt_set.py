@@ -8,7 +8,7 @@ from swarm.environment.prompt.prompt_set_registry import PromptSetRegistry
 from swarm.environment.prompt.common import get_combine_materials
 
 
-#@PromptSetRegistry.register('cmmlu')
+@PromptSetRegistry.register('cmmlu')
 class CMMLUPromptSet(PromptSet):
     """
     MMLU prompt set for the 4-option qestion answering.

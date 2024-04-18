@@ -9,7 +9,7 @@ from swarm.environment.prompt.common import get_combine_materials
 
 
 @PromptSetRegistry.register('mmlu')
-@PromptSetRegistry.register('cmmlu')
+#@PromptSetRegistry.register('cmmlu') TODO
 @PromptSetRegistry.register('mixedmmlu')
 class MMLUPromptSet(PromptSet):
     """
@@ -27,7 +27,7 @@ class MMLUPromptSet(PromptSet):
         You must choose the correct answer to the question.
         Answer with only a single letter (A, B, C, or D).
         Do not include any other information in your answer except the letter.
-        Your response should be in Jason format, with the key "answer" and the value being one of the 4 letters: A, B, C, or D, corresponding to the correct answer.
+        Your response should be in JSON format, with the key "answer" and the value being one of the 4 letters: A, B, C, or D, corresponding to the correct answer.
         Here is an example of the correct format:
         {
             "answer": "A"

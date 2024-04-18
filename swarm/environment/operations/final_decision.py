@@ -76,7 +76,7 @@ class FinalDecision(Node):
                        **kwargs) -> None:
 
         node_inputs = self.process_input(inputs)
-        print("FinalDecision Inputs: ", node_inputs)
+        #print("FinalDecision Inputs: ", node_inputs) TODO
         prompt = None
         response = None
 
@@ -101,11 +101,11 @@ class FinalDecision(Node):
 
             counter = Counter(answers)
             sorted_counter = counter.most_common()
-            print("sorted counter: ",sorted_counter)
+            #print("sorted counter: ",sorted_counter)
             max_freq = sorted_counter[0][1]
             equally_frequent_answers = [ans for ans, freq in sorted_counter if freq == max_freq]
             response = random.choice(equally_frequent_answers)
-            print(f"{answers=} {response=}")
+            #print(f"{answers=} {response=}")
             
         elif self.strategy == MergingStrategy.RandomChoice:
             if len(inputs) == 0:

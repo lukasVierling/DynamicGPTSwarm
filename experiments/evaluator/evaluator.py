@@ -105,6 +105,10 @@ class Evaluator():
 
         assert self._swarm is not None
 
+        #edge network in eval mode
+        if edge_network_enable:
+            self._swarm.connection_dist.model.eval()
+
         dataset = self._val_dataset
 
         print(f"Evaluating swarm on {dataset.__class__.__name__} split {dataset.split}")
