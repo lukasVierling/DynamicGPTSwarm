@@ -5,7 +5,7 @@ from class_registry import ClassRegistry
 
 from swarm.llm.llm import LLM
 
-CUSTOM_LLMS = ["google/gemma-7B-it","vivo-ai/BlueLM-7B-Chat"]
+CUSTOM_LLMS = ["google/gemma-2B-it","google/gemma-7B-it","vivo-ai/BlueLM-7B-Chat","meta-llama/Meta-Llama-3-8B-Instruct"]
 
 class LLMRegistry:
     registry = ClassRegistry()

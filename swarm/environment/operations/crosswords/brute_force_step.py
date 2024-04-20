@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import List, Any, Optional
 
 from swarm.environment.prompt.prompt_set_registry import PromptSetRegistry
-from swarm.environment.domain.crosswords.parser import parse_response
+from swarm.environment.domain.crosswords.parser import parse_response, parse_response_JSON
 from swarm.llm import LLMRegistry
 from swarm.environment.operations.crosswords.crosswords_operation import CrosswordsOperation
 
@@ -45,8 +45,13 @@ class BruteForceStep(CrosswordsOperation):
         llm_querier = self.llm_query_with_cache
         env = deepcopy(inputs["env"])
         prompt = self.prompt_set.get_propose_prompt(env.render())
+        print(prompt)
+        print("---------End Prompt, Now Response----------")
         response = await llm_querier(prompt)
+        print(response)
+        print("---------End Response, Now Parsed Response----------")
         candidates = parse_response(response)[:self.max_candidates]
+        print(candidates)
         _, env = self.brute_force_optimize([candidate for candidate, _ in candidates], [score for _, score in candidates], env)
 
         return [{'env': env}]

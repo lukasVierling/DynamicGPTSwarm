@@ -32,6 +32,7 @@ class CustomLLM(LLM):
         super().__init__()
         print(f"We are using custom LLM class, model_name: {model_name}")
         self.model_name = model_name
+
         if self.model_name not in CustomLLM.models:
             print("Load Model...")
             CustomLLM.devices[self.model_name] = select_gpu()
@@ -41,6 +42,9 @@ class CustomLLM(LLM):
             CustomLLM.tokenizers[self.model_name] = AutoTokenizer.from_pretrained(self.model_name, trust_remote_code=True, use_fast=False)
             if self.model_name == "vivo-ai/BlueLM-7B-Chat":
                 CustomLLM.tokenizers[self.model_name].apply_chat_template = BlueLM_apply_chat_template
+        self.terminators = [CustomLLM.tokenizers[self.model_name].eos_token_id]
+        if self.model_name == "meta-llama/Meta-Llama-3-8B-Instruct":
+            self.terminators += [CustomLLM.tokenizers[self.model_name].convert_tokens_to_ids("<|eot_id|>")]
 
 
     def process_messages(self,messages: List[Message]) -> List[Message]:
@@ -80,7 +84,8 @@ class CustomLLM(LLM):
         if isinstance(messages, str):
             messages = [Message(role="user", content=messages)]
         else:
-            messages = self.process_messages(messages)
+            if self.model_name in ["google/gemma-2B-it","google/gemma-7B-it","vivo-ai/BlueLM-7B-Chat"]:
+                messages = self.process_messages(messages)
         
         prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
         prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name]}") #add special token for blue apparently true...?
@@ -92,11 +97,12 @@ class CustomLLM(LLM):
             temperature=temperature,
             num_return_sequences=num_comps,
             top_k=50,
-            top_p=1.0
+            top_p=0.9, #changed from 1.0 -> 0.9
+            eos_token_id=self.terminators
         )
         output_text = self.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
-        print("These are the outputs after generation: ")
-        print(output_text)
+        #print("These are the outputs after generation: ")
+        #print(output_text)
         return output_text      
         '''
         sampling_params = SamplingParams(temperature=temperature, top_p=1, top_k=50,max_tokens=max_tokens)
@@ -127,7 +133,6 @@ class CustomLLM(LLM):
         else:
             messages = self.process_messages(messages)
 
-
         prompt = self.tokenizers[self.model_name].apply_chat_template([asdict(message) for message in messages], tokenize=False, add_generation_prompt=True)
         prompt = self.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name]}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
@@ -138,7 +143,7 @@ class CustomLLM(LLM):
             temperature=temperature,
             num_return_sequences=num_comps,
             top_k=50,
-            top_p=1.0
+            top_p=0.9, #changed from 1.0 -> 0.9
         )
         output_text = self.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
 

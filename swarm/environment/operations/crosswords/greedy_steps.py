@@ -27,7 +27,10 @@ class GreedySteps(CrosswordsOperation):
         env = inputs["env"]
         prompt = self.prompt_set.get_propose_prompt(env.render())
         response = await llm_querier(prompt)
+        print("--------Greedy Step Response -------")
         candidates = parse_response(response)
+        print("--------Greedy Step Candidates-------")
+        print(candidates)
         env = deepcopy(env)
         for candidate, _ in candidates:
             try:

@@ -8,7 +8,8 @@ import torch
 import sys
 import random
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = "6,7"
+import argparse
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6,7"
 
 from swarm.environment.domain.crosswords.env import MiniCrosswordsEnv
 from swarm.environment.agents.agent_registry import AgentRegistry
@@ -20,8 +21,15 @@ from swarm.environment.domain.crosswords.evaluator import CrosswordsEvaluator
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--id" , type=int, default=0)    
+    parser.add_argument('--edge_network_enable', action='store_true', default=False,
+                        help="Enable edge network")
+
+    args = parser.parse_args()
     if len(sys.argv) == 2:
-        id = int(sys.argv[1])
+        id = args.id
         experiment_id = f"experiment{id}"
         torch.manual_seed(id)
         np.random.seed(id)
@@ -42,12 +50,15 @@ if __name__ == "__main__":
     include_inner_agent_connections = True
     connect_output_nodes_to_final_node = True
     window_size = 10
-    edge_network_enable = False
-    llm_backbone_name = "GPT2"
-    lr = 0.0001 #0.4 for old experiments
+    edge_network_enable = args.edge_network_enable
+    llm_backbone_name = "google/gemma-2B"
+    if edge_network_enable:
+        lr = 0.0001
+    else:
+        lr = 0.4
 
     evaluator = CrosswordsEvaluator(test_data, batch_size=batch_size, metric="words", window_size=window_size, init_socre=0.4, use_init_score=True)
-    swarm = Swarm(["CrosswordsToT","CrosswordsBruteForceOpt","CrosswordsReflection"], "crosswords", "CustomLLM",#"gpt-3.5-turbo-1106", #"gpt-4-1106-preview" ,  
+    swarm = Swarm(["CrosswordsToT"], "crosswords", "meta-llama/Meta-Llama-3-8B-Instruct",#"google/gemma-7B-it",#,#"gpt-3.5-turbo-1106", #"gpt-4-1106-preview" ,  #"CrosswordsToT","CrosswordsBruteForceOpt","CrosswordsReflection"
                 final_node_class="ReturnAll", 
                 final_node_kwargs={},
                 edge_optimize=True,

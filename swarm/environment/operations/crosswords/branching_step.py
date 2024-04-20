@@ -36,8 +36,11 @@ class BranchingStep(CrosswordsOperation):
             }]
         prompt = self.prompt_set.get_propose_prompt(env.render())
         response = await llm_querier(prompt)
+        print("--------Branching Step Response-------")
+        print(response)
         candidates = parse_response(response)[:self.branch_factor]
-
+        print("--------Branching Step Candidates-------")
+        print(candidates)
         if len(candidates) == 0:
             return [{
                 "env": env
