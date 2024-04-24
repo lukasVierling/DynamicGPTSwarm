@@ -28,6 +28,16 @@ class CrosswordsEvaluator():
         self.idx = 0
         self.perm = np.random.permutation(self.sample_size)
 
+    async def get_edge_probs(self, swarm):
+        self.idx += 1
+        if self.idx == self.sample_size:
+            self.shuffle_data()
+        problem_idx = self.perm[self.idx]
+        env = deepcopy(self.env)
+        env.reset(self.perm[problem_idx])
+        inputs = {"env": env}
+        return swarm.connection_dist.realize(swarm.composite_graph, inputs=inputs, only_edge_probs=True)
+
     async def evaluateWithEdgeNetwork(self, swarm, return_moving_average=False, use_learned_order=False, evaluate_graph=True):
         self.idx += 1
         if self.idx == self.sample_size:
@@ -36,7 +46,7 @@ class CrosswordsEvaluator():
         env = deepcopy(self.env)
         env.reset(self.perm[problem_idx])
         inputs = {"env": env}
-        #Realize a Graph conditioned by input
+        #Realize a Graph conditioned by input TODO add suggest prompt?
         graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order, inputs=inputs)
         if not(evaluate_graph):
             return graph

@@ -182,6 +182,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                 threshold: float = None,
                 use_learned_order: bool = False,
                 inputs: dict = None,
+                only_edge_probs: bool = False
                 ) -> Tuple[CompositeGraph, torch.Tensor]:
         # Compute edge_logits using the model
         if self.domain == "crosswords":    
@@ -193,6 +194,8 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
         edge_logits = self.model(prompt)
         edge_logits = edge_logits.reshape(-1)
 
+        if only_edge_probs:
+            return torch.sigmoid(edge_logits)
 
 
         if use_learned_order:
@@ -224,8 +227,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                     log_probs.append(torch.log(1 - edge_prob))
 
         log_prob = torch.sum(torch.stack(log_probs))
-        edge_probs = torch.sigmoid(edge_logits)
-        return _graph, log_prob#, edge_probs #not supposed to reutn log_probs #TODO
+        return _graph, log_prob #not supposed to reutn log_probs #TODO
     
     def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
         _graph = deepcopy(graph)

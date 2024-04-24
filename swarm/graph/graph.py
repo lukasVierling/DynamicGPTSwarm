@@ -110,7 +110,7 @@ class Graph(ABC):
 
     async def run(self, inputs: Dict[str, Any], 
                   max_tries: int = 3, 
-                  max_time: int = 600, 
+                  max_time: int = 60, 
                   return_all_outputs: bool = False) -> List[Any]:
         def is_node_useful(node):
             if node in self.output_nodes:
@@ -128,6 +128,9 @@ class Graph(ABC):
             node_input = deepcopy(inputs)
             input_node.inputs = [node_input]
         while zero_in_degree_queue:
+            #write "while zero_in_degree_queue" in the txt file in result/crosswords/cpu_loop_check.txt
+            with open("result/crosswords/cpu_loop_check.txt", "a") as file:
+                file.write("while zero_in_degree_queue\n")
             current_node_id = zero_in_degree_queue.pop(0)
             current_node = self.nodes[current_node_id]
             tries = 0

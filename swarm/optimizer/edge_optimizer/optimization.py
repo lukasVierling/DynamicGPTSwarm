@@ -6,11 +6,13 @@ import pickle
 import numpy as np
 #from edge_network import EdgeNetwork
 
-def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_size=4, record=False, experiment_id='experiment', use_learned_order=False, edge_network_enable=False):
-    optimizer = torch.optim.Adam(swarm.connection_dist.parameters(), lr=lr)
+def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_size=4, record=False, experiment_id='experiment', use_learned_order=False, edge_network_enable=False, optimizer=None):
+    if optimizer is None:
+        optimizer = torch.optim.Adam(swarm.connection_dist.parameters(), lr=lr)
     pbar = tqdm(range(num_iter))
     utilities = []
     loop = asyncio.get_event_loop()
+
     for step in pbar:
         evaluator.reset()
         optimizer.zero_grad()
@@ -24,6 +26,12 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
                 _graph, log_prob = swarm.connection_dist.realize(swarm.composite_graph, use_learned_order=use_learned_order)
                 tasks.append(evaluator.evaluate(_graph, return_moving_average=True))
                 log_probs.append(log_prob)
+                #visualize every created graph for later debugging in case the job gets stuck on cpu again -> Hypothesis: Loop due to graph structure
+                matrix = _graph.adj_matrix
+                #write the matrix in result/crosswords/graphs.txt in concatenation mode
+                with open("result/crosswords/graphs.txt", "a") as file:
+                    file.write(str(matrix))
+                    file.write("\n")
         results = loop.run_until_complete(asyncio.gather(*tasks)) #
         #log probs are returned by evaluateWithEdgeNetwork becasue they are not yet decided
         if edge_network_enable:
@@ -48,4 +56,8 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
             if record:
                 with open(f"result/crosswords/{experiment_id}_utilities_{step}.pkl", "wb") as file:
                     pickle.dump(utilities, file)
-                torch.save(swarm.connection_dist.state_dict(), f"result/crosswords/{experiment_id}_edge_logits_{step}.pt")
+                if edge_network_enable:
+                    torch.save(swarm.connection_dist.model.linear.state_dict(), f"result/crosswords/{experiment_id}_edge_logits_{step}.pt")
+                else:
+                    torch.save(swarm.connection_dist.state_dict(), f"result/crosswords/{experiment_id}_edge_logits_{step}.pt")
+                torch.save(optimizer.state_dict(), f"result/crosswords/{experiment_id}_optimizer_{step}.pt")

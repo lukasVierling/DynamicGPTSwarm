@@ -113,6 +113,7 @@ class Swarm:
                     if node in [output_node.id for output_node in agent.output_nodes]:
                         agent.nodes[node].add_successor(decision_method)
         if self.edge_network_enable:
+            print("edge network 2", self.edge_network_enable)
             edge_network = EdgeNetwork(llm_backbone_name=self.llm_backbone_name, num_edges=len(potential_connections), initial_probability=self.init_connection_probability)
             self.connection_dist = EdgeWiseDistributionByModel(potential_connections, edge_network, self.domain)
         else:
