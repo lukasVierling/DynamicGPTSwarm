@@ -28,10 +28,6 @@ def optimize(swarm, evaluator, num_iter=100, lr=1e-1, display_freq=10, batch_siz
                 log_probs.append(log_prob)
                 #visualize every created graph for later debugging in case the job gets stuck on cpu again -> Hypothesis: Loop due to graph structure
                 matrix = _graph.adj_matrix
-                #write the matrix in result/crosswords/graphs.txt in concatenation mode
-                with open("result/crosswords/graphs.txt", "a") as file:
-                    file.write(str(matrix))
-                    file.write("\n")
         results = loop.run_until_complete(asyncio.gather(*tasks)) #
         #log probs are returned by evaluateWithEdgeNetwork becasue they are not yet decided
         if edge_network_enable:

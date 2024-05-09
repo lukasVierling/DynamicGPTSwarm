@@ -28,6 +28,45 @@ class CustomLLM(LLM):
     tokenizers = {}
     devices = {} #2-dim after alowing for several models on different gpus
     MAX_LLMS = 1
+    tokens = {}
+    count_tokens = False
+
+    @staticmethod
+    def start_counter():
+        CustomLLM.count_tokens = True
+        CustomLLM.tokens = {model:{"actual":{"input":0, "output":0},"max":{"input":0,"output":0}} for model in CustomLLM.models}
+    @staticmethod
+    def end_counter():
+        CustomLLM.count_tokens = False
+    @staticmethod
+    def reset_counter():
+        CustomLLM.tokens = {model:{"actual":{"input":0, "output":0},"max":{"input":0,"output":0}} for model in CustomLLM.models}
+    @staticmethod
+    def get_tokens():
+        return CustomLLM.tokens
+    @staticmethod
+    def get_price(prices):
+        '''
+        calcualtes the price for the tokens used in the LLM based on a price list (price is USD/Million Tokens)
+        '''
+        cost=0
+        for model, tokens in CustomLLM.tokens.items():
+
+            price_input = prices.get(model, {}).get("input", 0)
+            price_output = prices.get(model, {}).get("output", 0)
+            cost += price_input * tokens["actual"]["input"]/1000000 + price_output * tokens["actual"]["output"]/1000000
+
+        return  cost
+    def get_max_price(prices):
+        '''
+        calcualtes the price for the tokens used in the LLM based on a price list (price is USD/Million Tokens)
+        '''
+        cost=0
+        for model, tokens in CustomLLM.tokens.items():
+            price_input = prices.get(model, {}).get("input", 0)
+            price_output = prices.get(model, {}).get("output", 0)
+            cost += price_input * tokens["max"]["input"]/1000000 + price_output * tokens["max"]["output"]/1000000
+        return  cost
     
 
     def __init__(self, model_name: Optional[str] = "google/gemma-7B-it"):
@@ -97,6 +136,9 @@ class CustomLLM(LLM):
         idx = random.randrange(0,CustomLLM.MAX_LLMS) #get a random worker to do the job
         prompt = CustomLLM.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name][idx]}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
+        if CustomLLM.count_tokens:
+            CustomLLM.tokens[self.model_name]["actual"]["input"] += prompt_len
+            CustomLLM.tokens[self.model_name]["max"]["input"] += prompt_len
         outputs = CustomLLM.models[self.model_name][idx].generate(
             prompt,
             do_sample=True,
@@ -108,6 +150,11 @@ class CustomLLM(LLM):
             eos_token_id=self.terminators,
             pad_token_id =CustomLLM.tokenizers[self.model_name].pad_token_id
         )
+        if CustomLLM.count_tokens:
+            CustomLLM.tokens[self.model_name]["actual"]["output"] += len(outputs[0])
+            print(f"Output tokens: {len(outputs[0])}")
+            CustomLLM.tokens[self.model_name]["max"]["output"] += max_tokens + prompt_len
+            print(f"Max tokens: {max_tokens+prompt_len}")
         output_text = CustomLLM.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
         #print("These are the outputs after generation: ")
         #print(output_text)
@@ -145,6 +192,8 @@ class CustomLLM(LLM):
         idx = random.randrange(0,CustomLLM.MAX_LLMS) #get a random worker to do the job
         prompt = CustomLLM.tokenizers[self.model_name].encode(prompt, add_special_tokens=False, return_tensors="pt").to(f"cuda:{CustomLLM.devices[self.model_name][idx]}") #add special token for blue apparently true...?
         prompt_len = len(prompt[0])
+        if CustomLLM.count_tokens:
+            CustomLLM.tokens[self.model_name]["input"] += prompt_len
         outputs = CustomLLM.models[self.model_name][idx].generate(
             prompt,
             do_sample=True,
@@ -154,6 +203,8 @@ class CustomLLM(LLM):
             top_k=50,
             top_p=0.9, #changed from 1.0 -> 0.9
         )
+        if CustomLLM.count_tokens:
+            CustomLLM.tokens[self.model_name]["output"] += len(outputs[0])
         output_text = CustomLLM.tokenizers[self.model_name].decode(outputs[0][prompt.shape[-1]:],skip_special_tokens=True)
 
         return output_text

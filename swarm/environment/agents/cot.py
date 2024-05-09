@@ -19,7 +19,8 @@ class COT(Graph):
         for i_thought in range(num_thoughts):
             thought = CoTStep(self.domain,
                            self.model_name,
-                           is_last_step=i_thought==num_thoughts-1)
+                           is_last_step=i_thought==num_thoughts-1,
+                           thoughts_left = num_thoughts - i_thought - 1,)
             if i_thought > 0:
                 thoughts[-1].add_successor(thought)
             thoughts.append(thought)

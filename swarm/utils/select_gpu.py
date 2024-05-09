@@ -1,6 +1,7 @@
 import torch
 import GPUtil
 
+
 def select_gpu():
     device_ids = GPUtil.getAvailable(order = 'memory')
     if not device_ids:

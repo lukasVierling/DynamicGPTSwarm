@@ -12,11 +12,13 @@ class CoTStep(Node):
                  model_name: Optional[str],
                  is_last_step: bool,
                  operation_description: str = "Make one step of CoT",
+                 thoughts_left: int = 0,
                  id=None):
         super().__init__(operation_description, id, True)
         self.domain = domain
         self.model_name = model_name
         self.is_last_step = is_last_step
+        self.thoughts_left = thoughts_left
         self.llm = LLMRegistry.get(model_name)
         self.prompt_set = PromptSetRegistry.get(domain)
         self.role = self.prompt_set.get_role()
@@ -48,7 +50,7 @@ class CoTStep(Node):
                     "Expand on the next step. "
                     "Do not try to provide the answer straight away, instead expand "
                     "on your thoughts about the next step of the solution."
-                    "Aswer in maximum 30 words. "
+                    "Answer in maximum 30 words. "
                     "Do not expect additional input. Make best use of whatever "
                     "knowledge you have been already provided.")
             if 'output' in input_dict:

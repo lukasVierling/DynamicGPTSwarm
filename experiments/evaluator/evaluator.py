@@ -10,12 +10,14 @@ from torch.utils.tensorboard.writer import SummaryWriter
 import numpy as np
 import json
 import math
+import random
 
 from swarm.graph import Graph
 from swarm.environment.agents import IO
 from swarm.graph.swarm import Swarm
 from experiments.evaluator.datasets.base_dataset import BaseDataset
 from experiments.evaluator.accuracy import Accuracy
+from swarm.environment.agents import AgentRegistry
 
 
 class Evaluator():
@@ -50,15 +52,16 @@ class Evaluator():
         else:
             self._logger = None
 
-    async def evaluate_direct_answer(self,
+    async def evaluate_agent(self,
             limit_questions: Optional[int] = None,
+            agent: str = "DirectAnswer",
             ) -> float:
 
         dataset = self._val_dataset
 
         print(f"Evaluating DirectAnswer on {dataset.get_domain()} split {dataset.split}")
-
-        io_agent = IO(dataset.get_domain(), self._model_name)
+        
+        agent = AgentRegistry.get(agent,dataset.get_domain(), self._model_name)
 
         accuracy = Accuracy()
 
@@ -71,10 +74,14 @@ class Evaluator():
             input_dict = dataset.record_to_swarm_input(record)
             #print(input_dict)
 
-            raw_answer = await io_agent.run(input_dict)
+            raw_answer = await agent.run(input_dict)
 
             print("Raw answer:", raw_answer)
-            answer = dataset.postprocess_answer(raw_answer)
+            try:
+                answer = dataset.postprocess_answer(raw_answer)
+            except Exception as e:
+                print("Exception while postprocessing answer:", e)
+                answer = ['']
             print("Postprocessed answer:", answer)
             correct_answer = dataset.record_to_target_answer(record)
             accuracy.update(answer, correct_answer)
@@ -119,6 +126,7 @@ class Evaluator():
         elif mode == 'external_edge_probs':
             assert edge_probs is not None
             edge_mask = edge_probs > 0.5
+            print("Edge Mask:", edge_mask)
             realized_graph = self._swarm.connection_dist.realize_mask(self._swarm.composite_graph, edge_mask)
             realized_graph.display()
         else:
@@ -157,7 +165,7 @@ class Evaluator():
                 input_dict = dataset.record_to_swarm_input(record)
                 #print("input_dict:", input_dict)
                 if edge_network_enable:
-                    realized_graph, log_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
+                    realized_graph, log_prob, edge_probs = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
                 else:
                     realized_graph, log_prob = self._swarm.connection_dist.realize(
                         self._swarm.composite_graph,
@@ -169,7 +177,6 @@ class Evaluator():
                 future_answers.append(future_answer)
 
             raw_answers = await asyncio.gather(*future_answers)
-
             print(f"Batch time {time.time() - start_ts:.3f}")
 
             for raw_answer, record in zip(raw_answers, record_batch):
@@ -205,9 +212,8 @@ class Evaluator():
             src_id, dst_id = conn
             src_node = self._swarm.composite_graph.find_node(src_id)
             dst_node = self._swarm.composite_graph.find_node(dst_id)
-            msg = (f"{i_conn}: src={src_node.node_name}({src_node.id}), "
-                    f"dst={dst_node.node_name}({dst_node.id}), prob={prob.item():.3f}")
-            msgs.append(msg+"\n")
+            msg = (f"{i_conn}: src={src_node.model_name if hasattr(src_node, 'model_name') else src_node.node_name}({src_node.id}), "
+                f"dst={dst_node.model_name if hasattr(dst_node, 'model_name') else dst_node.node_name}({dst_node.id}), prob={prob.item():.3f}")
             print(msg)
         if save_to_file:
             if self._art_dir_name is not None:
@@ -221,6 +227,10 @@ class Evaluator():
             lr: float,
             batch_size: int = 4,
             edge_network_enable: bool = False,
+            reduce_edges: bool =False,
+            delta: float = 0.2,
+            reduce_cost: bool=False,
+            epsilon: float = 0.1,
             ) -> torch.Tensor:
 
         assert self._swarm is not None
@@ -249,6 +259,18 @@ class Evaluator():
 
         loader = infinite_data_loader()
 
+        #to normalize the costs we want to compute the highest amount of cost possible
+        random_idx = random.randint(0,len(dataset)-1)
+        if reduce_cost:
+            edge_probs = torch.ones(len(self._swarm.connection_dist.potential_connections))
+            realized_graph = self._swarm.connection_dist.realize_mask(self._swarm.composite_graph, edge_probs)
+            _,max_cost = await self._swarm.arun(dataset.record_to_swarm_input(dataset[random_idx]), realized_graph, return_cost=False, return_max_cost=True)
+
+            print("max:", max_cost)
+
+            print("We normalize the graph costs with: ", max_cost)
+
+
         edge_probs = None
         for i_iter in range(num_iters):
             print(f"Iter {i_iter}", 80*'-')
@@ -258,28 +280,41 @@ class Evaluator():
             future_answers = []
             log_probs = []
             correct_answers = []
+            edge_probs = []
+            costs = []
             for i_record, record in zip(range(batch_size), loader):
                 input_dict = dataset.record_to_swarm_input(record)
                 if edge_network_enable:
-                    realized_graph, log_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
+                    realized_graph, log_prob, edge_prob = self._swarm.connection_dist.realize(self._swarm.composite_graph, inputs=input_dict)
                 else:
                     realized_graph, log_prob = self._swarm.connection_dist.realize(
                         self._swarm.composite_graph,
                         # temperature=3.0, # DEBUG
                         )
-                answer = self._swarm.arun(input_dict, realized_graph) #add dataset for further processing in later steps
+                    edge_prob = torch.sigmoid(self._swarm.connection_dist.edge_logits)
+                answer = self._swarm.arun(input_dict, realized_graph, return_cost=reduce_cost) #add dataset for further processing in later steps
                 future_answers.append(answer)
                 log_probs.append(log_prob)
+                edge_probs.append(edge_prob)
                 correct_answer = dataset.record_to_target_answer(record) #should work the same way for both datasets
                 correct_answers.append(correct_answer)
 
-            raw_answers = await asyncio.gather(*future_answers)
 
+            # With this loop:
+            raw_answers = []
+            for future in future_answers:
+                raw_answer = await future
+                raw_answers.append(raw_answer)
+            print(raw_answers)
+            #raw_answers = await asyncio.gather(*future_answers)
+            costs = [raw_answer[1] if reduce_cost else 0 for raw_answer in raw_answers]
+            print(costs)
+            raw_answers = [raw_answer[0] for raw_answer in raw_answers]
             print(f"Batch time {time.time() - start_ts:.3f}")
 
             loss_list: List[torch.Tensor] = []
             utilities: List[float] = []
-            for raw_answer, log_prob, correct_answer in zip(raw_answers, log_probs, correct_answers):
+            for raw_answer, log_prob, correct_answer, cost in zip(raw_answers, log_probs, correct_answers, costs):
                 
                 print("Raw answer:", raw_answer)
                 print("Correct answer:", correct_answer)
@@ -290,13 +325,22 @@ class Evaluator():
                 accuracy = Accuracy()
                 accuracy.update(answer, correct_answer)
                 utility = accuracy.get()
-                utilities.append(utility)
+                if reduce_cost:
+                    utility -= min(epsilon * cost/max_cost,0.99)#pow(len(self._swarm.composite_graph.nodes),2) #run a fully connected graph once and get a good approximation of the max price for nomrlaization
+                    print("cost: ", cost)
+                    print("normalized cost: ", cost/max_cost)
+                    utility = max(0,utility)
+                    #give a small reward if correct because an expensive correct answer is better than a wrong
                 single_loss = - log_prob * utility
+                utilities.append(utility)
                 loss_list.append(single_loss)
+            
 
             print("utilities:", utilities)
             mean_utility = np.mean(np.array(utilities))
             total_loss = torch.mean(torch.stack(loss_list))
+            if reduce_edges:
+                total_loss += delta * torch.sum(torch.abs(torch.stack(edge_probs)))/len(edge_probs) #calc the average edge prob and subtract it as part of the loss
 
             print("loss:", total_loss.item())
             optimizer.zero_grad()
@@ -326,7 +370,7 @@ class Evaluator():
                     f.write("\n")
             print("end of iteration")
 
-        if edge_probs is not None:
+        if edge_probs is not None and not(edge_network_enable):
             self._print_conns(edge_probs, save_to_file=True)
 
         print("Done!")

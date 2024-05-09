@@ -18,6 +18,8 @@ from swarm.utils.log import logger
 from swarm.environment.agents import AgentRegistry
 from swarm.environment.operations.operation_registry import OperationRegistry
 
+from swarm.llm.custom_llm import CustomLLM
+
 
 class Swarm:
     """
@@ -39,7 +41,8 @@ class Swarm:
                  connect_output_nodes_to_final_node: bool = False,
                  include_inner_agent_connections: bool = True,
                  edge_network_enable: bool = False,
-                 llm_backbone_name: str = "GPT2"
+                 llm_backbone_name: str = "google/gemma-2B",
+                 price_list = None
                  ):
         
         self.id = shortuuid.ShortUUID().random(length=4)    
@@ -56,6 +59,7 @@ class Swarm:
         self.connect_output_nodes_to_final_node = connect_output_nodes_to_final_node
         self.edge_network_enable = edge_network_enable
         self.llm_backbone_name = llm_backbone_name
+        self.price_list = price_list
         self.organize(include_inner_agent_connections)
 
     def organize(self, include_inner_agent_connections: bool = True):
@@ -154,7 +158,7 @@ class Swarm:
             realized_graph: Optional[CompositeGraph] = None,
             display: bool = False,
             ):
-
+        CustomLLM.start_counter()
         if realized_graph is None:
             _graph, _ = self.connection_dist.realize(self.composite_graph)
         else:
@@ -170,8 +174,11 @@ class Swarm:
     async def arun(self,
              inputs: Dict[str, Any],
              realized_graph: Optional[CompositeGraph] = None,
+             return_cost: bool = False,
+             return_max_cost: bool = False,
              ):
-
+        if return_cost or return_max_cost:
+            CustomLLM.start_counter()
         if realized_graph is None:
             _graph, _ = self.connection_dist.realize(self.composite_graph)
         else:
@@ -180,5 +187,10 @@ class Swarm:
         _graph.display(draw=self.open_graph_as_html)
 
         final_answer = await _graph.run(inputs)
-
+        if return_cost and self.price_list:
+            cost = CustomLLM.get_price(self.price_list)
+            return final_answer, cost
+        if return_max_cost and self.price_list:
+            cost = CustomLLM.get_max_price(self.price_list)
+            return final_answer, cost
         return final_answer

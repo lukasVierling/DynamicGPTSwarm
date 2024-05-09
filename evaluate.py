@@ -1,4 +1,6 @@
 import json
+import os
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6,7"
 from tqdm import tqdm
 import asyncio
 import numpy as np
@@ -19,7 +21,7 @@ def my_load(swarm, path, edge_network_enable):
     if not(edge_network_enable):
         swarm.connection_dist.load_state_dict(torch.load(path))
     else:
-        pretrained_dict = torch.load(path)
+        pretrained_dict = torch.load(path, map_location=swarm.connection_dist.model.device)
         model_dict = swarm.connection_dist.state_dict()
         print(model_dict.keys())
         print(pretrained_dict.keys())
@@ -62,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument("--edge_network_enable", action="store_true", default=False)
     parser.add_argument("--pretrained_path", type=str, default=None)
     
-    n_samples = 5
+    n_samples = 3
 
     args = parser.parse_args()
     args = DebugArgs()
@@ -96,6 +98,19 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     utilities = []
     evaluator.reset()
+    num_edges = []
+
+    average_adj_matrix = None
+    for _ in range(100):
+        graph = asyncio.run(evaluator.evaluateWithEdgeNetwork(swarm=swarm,return_moving_average = True, use_learned_order = False, evaluate_graph = False))
+        if average_adj_matrix is None:
+            average_adj_matrix = graph.adj_matrix
+        else:
+            average_adj_matrix += graph.adj_matrix
+            
+        num_edges.append(graph.num_edges)
+    #wait for evaluate functions to terminate
+    print(average_adj_matrix/100)
 
     '''
     if edge_network_enable:
@@ -139,22 +154,10 @@ if __name__ == "__main__":
     
     with open(f"result/crosswords/{experiment_id}_edge_network-{edge_network_enable}_final_utilities.pkl", "wb") as file:
         pickle.dump(results, file)
-    '''
-    num_edges = []
 
-    average_adj_matrix = None
-    for _ in range(100):
-        graph = asyncio.run(evaluator.evaluateWithEdgeNetwork(swarm=swarm,return_moving_average = True, use_learned_order = False, evaluate_graph = False))
-        if average_adj_matrix is None:
-            average_adj_matrix = graph.adj_matrix
-        else:
-            average_adj_matrix += graph.adj_matrix
-            
-        num_edges.append(graph.num_edges)
-    #wait for evaluate functions to terminate
-    print(average_adj_matrix/100)
-    #print the weights and bias of last linear layer of the EdgeNetwork in the connectiON-dis
     
+    #print the weights and bias of last linear layer of the EdgeNetwork in the connectiON-dis
+    '''
     print("----- Model Weights ----")
     print(swarm.connection_dist.model.linear.bias)
     print("----- Model Bias -----")

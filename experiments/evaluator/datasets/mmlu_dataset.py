@@ -11,12 +11,13 @@ from experiments.evaluator.datasets.base_dataset import BaseDataset, SwarmInput
 class MMLUDataset(BaseDataset):
     def __init__(self,
         split: Union[Literal['dev'], Literal['val'], Literal['test']],
+        categories: List[str] = None
         ) -> None:
 
         self._split = split
 
         data_path = f"dataset/MMLU/data/{self._split}/"
-        self._total_df: pd.DataFrame = self._load_data(data_path)
+        self._total_df: pd.DataFrame = self._load_data(data_path, categories=categories)
 
     @staticmethod
     def get_domain() -> str:
@@ -25,12 +26,16 @@ class MMLUDataset(BaseDataset):
     @staticmethod
     def _load_data(
         data_path: str,
+        categories: List[str] = None,
         ) -> pd.DataFrame:
 
         rng = np.random.default_rng(888)
 
         csv_paths = glob.glob(data_path + "*.csv")
         csv_paths = sorted(csv_paths)
+        #categoreis contains a list of categoreis we allow, filter all csv_paths that have a categoreis as their prefix
+        if categories:
+            csv_paths = [path for path in csv_paths if any([path.find(category) != -1 for category in categories])]
         print("Number of topics: ", len(csv_paths))
 
         names = ['question', 'A', 'B', 'C', 'D', 'correct_answer']

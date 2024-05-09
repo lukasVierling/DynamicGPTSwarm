@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from pyvis.network import Network
 import seaborn as sns
 
-def GPTSwarmVis(graph, style="pyvis", dry_run: bool = False, file_name=None):
+def GPTSwarmVis(graph, style="pyvis", dry_run: bool = False, file_name=None, plot_file_path=None ):
     G = nx.DiGraph()
     edge_labels = {}  
     order_counter = 0  
@@ -25,7 +25,8 @@ def GPTSwarmVis(graph, style="pyvis", dry_run: bool = False, file_name=None):
         else:
             color_map = generate_color_map(graph.nodes.keys())
 
-        net = Network(notebook=True, height="750px", width="100%", bgcolor="#FFFFFF", font_color="black", directed=True)
+                # Set cdn to 'remote'
+        net.options.cdn = 'remote'
         for node_id, node in graph.nodes.items():
             if hasattr(graph, 'graphs'):
                 graph_id = ''
@@ -51,6 +52,10 @@ def GPTSwarmVis(graph, style="pyvis", dry_run: bool = False, file_name=None):
             os.system(f"open {GPTSWARM_ROOT}/result/{file_name if file_name else 'example.html'}")
 
     else:
+        if hasattr(graph, 'graphs'):
+            color_map = generate_color_map([g.id for g in graph.graphs] + [''])
+        else:
+            color_map = generate_color_map(graph.nodes.keys())
         pos = nx.spring_layout(G, k=.3, iterations=30)
         node_colors = [color_map[node] for node in G.nodes()]
         node_sizes = [3000 + 100 * G.degree[node] for node in G.nodes()]
@@ -69,7 +74,10 @@ def GPTSwarmVis(graph, style="pyvis", dry_run: bool = False, file_name=None):
         plt.xlim(-1.5, 1.5)
         plt.ylim(-1.5, 1.5)
         if not dry_run:
-            plt.show()
+            if plot_file_path is not None:
+                plt.savefig(plot_file_path)
+            else:
+                plt.show()
 
 def generate_color_map(node_ids):
     color_palette = sns.color_palette("husl", len(node_ids)).as_hex()

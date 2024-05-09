@@ -227,7 +227,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
                     log_probs.append(torch.log(1 - edge_prob))
 
         log_prob = torch.sum(torch.stack(log_probs))
-        return _graph, log_prob #not supposed to reutn log_probs #TODO
+        return _graph, log_prob, torch.sigmoid(edge_logits) #not supposed to reutn log_probs #TODO
     
     def random_sample_num_edges(self, graph: CompositeGraph, num_edges: int) -> CompositeGraph:
         _graph = deepcopy(graph)
@@ -244,5 +244,20 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
             if not _graph.check_cycle(in_node, {out_node}, set()):
                 out_node.add_successor(in_node)
                 in_node.add_predecessor(out_node)
+        return _graph
+    
+    def realize_mask(self, graph: CompositeGraph, edge_mask: torch.Tensor) -> CompositeGraph:
+        _graph = deepcopy(graph)
+        for i, (potential_connection, is_edge) in enumerate(zip(self.potential_connections, edge_mask)):
+            out_node = _graph.find_node(potential_connection[0])
+            in_node = _graph.find_node(potential_connection[1])
+
+            if not out_node or not in_node:
+                continue
+
+            if not _graph.check_cycle(in_node, {out_node}, set()):
+                if is_edge:
+                    out_node.add_successor(in_node)
+                    in_node.add_predecessor(out_node)
         return _graph
 

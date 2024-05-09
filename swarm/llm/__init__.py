@@ -10,6 +10,7 @@ from swarm.llm.visual_llm import VisualLLM
 from swarm.llm.mock_visual_llm import MockVisualLLM # must be imported before VisualLLMRegistry
 from swarm.llm.gpt4v_chat import GPT4VChat # must be imported before VisualLLMRegistry
 from swarm.llm.visual_llm_registry import VisualLLMRegistry
+from swarm.llm.custom_llm import CustomLLM
 
 __all__ = [
     "Message",
@@ -20,4 +21,5 @@ __all__ = [
 
     "VisualLLM",
     "VisualLLMRegistry"
+    "CustomLLM"
 ]
