@@ -153,7 +153,7 @@ class EdgeWiseDistributionByModel(ConnectDistribution):
     def __init__(self,
                     potential_connections,
                     model,  # The model to compute edge_logits
-                    domain
+                    domain,
                     ):
         super().__init__(potential_connections)
         self.model = model

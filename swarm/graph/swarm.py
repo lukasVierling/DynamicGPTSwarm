@@ -42,7 +42,8 @@ class Swarm:
                  include_inner_agent_connections: bool = True,
                  edge_network_enable: bool = False,
                  llm_backbone_name: str = "google/gemma-2B",
-                 price_list = None
+                 price_list = None,
+                 embedding_only=False
                  ):
         
         self.id = shortuuid.ShortUUID().random(length=4)    
@@ -60,6 +61,7 @@ class Swarm:
         self.edge_network_enable = edge_network_enable
         self.llm_backbone_name = llm_backbone_name
         self.price_list = price_list
+        self.embedding_only = embedding_only
         self.organize(include_inner_agent_connections)
 
     def organize(self, include_inner_agent_connections: bool = True):
@@ -118,7 +120,7 @@ class Swarm:
                         agent.nodes[node].add_successor(decision_method)
         if self.edge_network_enable:
             print("edge network 2", self.edge_network_enable)
-            edge_network = EdgeNetwork(llm_backbone_name=self.llm_backbone_name, num_edges=len(potential_connections), initial_probability=self.init_connection_probability)
+            edge_network = EdgeNetwork(llm_backbone_name=self.llm_backbone_name, num_edges=len(potential_connections), initial_probability=self.init_connection_probability, embedding_only=self.embedding_only)
             self.connection_dist = EdgeWiseDistributionByModel(potential_connections, edge_network, self.domain)
         else:
             self.connection_dist = EdgeWiseDistribution(potential_connections, self.init_connection_probability)

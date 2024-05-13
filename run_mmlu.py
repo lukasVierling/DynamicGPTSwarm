@@ -57,6 +57,9 @@ def parse_args():
 
     parser.add_argument('--delta', type=float, default=0.2, #0.1 for vector case
                         help="weight for edge reduction")
+    
+    parser.add_argument('--embedding_only', action='store_true', default=False,
+                        help="Set for only embedding optimization")
 
     args = parser.parse_args()
     return args
@@ -91,6 +94,8 @@ async def main():
     reduce_edges = args.reduce_edges
     delta = args.delta
 
+    embedding_only = args.embedding_only
+
     #Hardcoding herer TODO
 
     
@@ -118,7 +123,8 @@ async def main():
             final_node_kwargs=dict(strategy=strategy),
             edge_optimize=True,
             edge_network_enable=edge_network_enable,
-            llm_backbone_name="google/gemma-2B"
+            llm_backbone_name="google/gemma-2B",
+            embedding_only=embedding_only
         )
 
     tag = f"{domain}_{swarm_name}_{strategy.name}_{mode}_{time.time()}"

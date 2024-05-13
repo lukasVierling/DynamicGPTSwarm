@@ -14,20 +14,28 @@ from swarm.graph.composite_graph import CompositeGraph
 from swarm.utils.select_gpu import select_gpu
 
 class EdgeNetwork(nn.Module):
-    def __init__(self, llm_backbone_name, num_edges, initial_probability=0.5):
+    def __init__(self, llm_backbone_name, num_edges, initial_probability=0.5, embedding_only=False):
         #if cude available set self.device to cuda
         self.device = f"cuda:{select_gpu()}" if torch.cuda.is_available() else "cpu"
         super(EdgeNetwork, self).__init__()
         self.llm_backbone = AutoModel.from_pretrained(llm_backbone_name)
         self.tokenizer = AutoTokenizer.from_pretrained(llm_backbone_name)
+        self.embedding_only = embedding_only
         #add padding to stop hf from giving me warnings
         if llm_backbone_name.lower() == "gpt2":
             self.tokenizer.add_special_tokens({'pad_token': '[PAD]'})
             self.llm_backbone.resize_token_embeddings(len(self.tokenizer))  # Resize token embeddings
             #freeze the backbone
+
+        #for the ablation study
+        hidden_size = self.llm_backbone.config.hidden_size
+        if embedding_only:
+            self.llm_backbone = self.llm_backbone.get_input_embeddings()
+
         for param in self.llm_backbone.parameters():
             param.requires_grad = False
-        self.linear = nn.Linear(self.llm_backbone.config.hidden_size, num_edges)
+            
+        self.linear = nn.Linear(hidden_size, num_edges)
         #nn.init.zeros_(self.linear.weight) TODO uncomment but let's see what happens with initialization of the weights
         #print(self.linear.weight)
         bias = torch.full((num_edges,), torch.log(torch.tensor(initial_probability / (1 - initial_probability))))
@@ -40,6 +48,9 @@ class EdgeNetwork(nn.Module):
         # Move input to GPU
         input_ids = self.tokenizer.batch_encode_plus(input_text, padding=True, return_tensors='pt')['input_ids'].to(self.device)
         llm_bare_output = self.llm_backbone(input_ids)
+        if self.embedding_only:
+            # from NxLxD -> 1x1xD
+            return self.linear(torch.mean(llm_bare_output[-1, : :],dim=0)).cpu()
         llm_output = llm_bare_output.last_hidden_state
         llm_output = llm_output[0][-1]
         edge_logits = self.linear(llm_output)
