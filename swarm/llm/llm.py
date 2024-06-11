@@ -7,7 +7,7 @@ from swarm.llm.format import Message
 class LLM(ABC):
     DEFAULT_MAX_TOKENS = 1000
     DEFAULT_TEMPERATURE = 0.2
-    DEFUALT_NUM_COMPLETIONS = 1
+    DEFAULT_NUM_COMPLETIONS = 1
 
     @abstractmethod
     async def agen(
