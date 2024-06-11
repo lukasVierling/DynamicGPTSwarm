@@ -31,21 +31,47 @@ To install and set up the repository, follow these steps:
 ## Usage
 To use the code, follow these steps:
 ```bash
-python train.py --config configs/train_config.json
+python run_mmlu.py <arguments>
 ```
+You can include one of the following arguments:
+
+- `mode`: str (default: 'OptimizedSwarm') - Mode of operation.
+- `num_truthful_agents`: int (default: 1) - Number of truthful agents.
+- `num_adversarial_agents`: int (default: 1) - Number of adversarial agents.
+- `num_iterations`: int (default: 200) - Number of optimization iterations.
+- `model_name`: str or List[str] (default: ["google/gemma-7B-it"]) - Model names.
+- `domain`: str (default: "mmlu") - Domain (same as dataset name).
+- `debug`: bool (default: False) - Set for a quick debug cycle.
+- `edge_network_enable`: bool (default: False) - Enable edge network.
+- `reproduce`: bool (default: False) - Set seed to 0 for deterministic training data.
+- `lr`: float (default: 0.0001) - Learning rate for edge network optimization.
+- `reduce_edges`: bool (default: False) - Reduce edges.
+- `delta`: float (default: 0.2) - Weight for edge reduction.
+- `embedding_only`: bool (default: False) - Set for only embedding optimization.
+
 
 ## Results
-
+![Results Graphic](diagrams/results.pdf)
 We demonstrate that our approach surpasses the previous static approach by nearly 6% accuracy on a combined dataset of MMLU and CMMLU, and by more than 10% when trained with a sparsity-inducing loss. It also shows superior performance in additional experiments conducted with the MMLU and Mini Crossword Puzzles datasets.
-
-### License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ### Acknowledgments
 
-This research builds upon the work by \citet{zhuge2024language}. Their original code base can be found here.
+This research builds upon the work by [Zhuge et al.](https://arxiv.org/abs/2402.16823) Their original code base can be found [here](https://github.com/metauto-ai/GPTSwarm).
 
 ### Contact
 
-For any questions or issues, please open an issue on this repository or contact us at [your_email@example.com].
+For any questions or issues, please open an issue on this repository or contact us at [lvierling@ust.connect.hk](lvierling@ust.connect.hk).
+
+### Citation
+
+If you find this work useful for your research, please consider citing (TODO: add citation):
+```
+@article{AuthorYear,
+  author = {Author},
+  title = {Title},
+  journal = {Journal},
+  year = {Year},
+  doi = {DOI},
+  url = {URL}
+}
+```
