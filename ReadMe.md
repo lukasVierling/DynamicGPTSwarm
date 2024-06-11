@@ -9,7 +9,7 @@ In this framework, we learn a model that generates edges representing the flow o
 ## Features
 
 - Dynamic edge generation based on input
-- Training with reinforcement learning
+- Train edge generation with reinforcement learning
 - Supports multiple datasets simultaneously
 - Superior performance on MMLU, CMMLU, and Mini Crossword Puzzles datasets
 
@@ -19,9 +19,8 @@ To install and set up the repository, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/lukasVierling/DynamicGPTSwarm.git
-   cd DynamicGPTSwarm
-
+    git clone https://github.com/lukasVierling/DynamicGPTSwarm.git
+    cd DynamicGPTSwarm
     ```
 2. Install the required dependencies:
     ```bash
@@ -32,6 +31,10 @@ To install and set up the repository, follow these steps:
 To use the code, follow these steps:
 ```bash
 python run_mmlu.py <arguments>
+```
+or 
+```bash
+python run_crosswords.py <arguments>
 ```
 You can include one of the following arguments:
 
@@ -52,6 +55,7 @@ You can include one of the following arguments:
 
 ## Results
 ![Results Graphic](diagrams/results.jpg)
+
 We demonstrate that our approach surpasses the previous static approach by nearly 6% accuracy on a combined dataset of MMLU and CMMLU, and by more than 10% when trained with a sparsity-inducing loss. It also shows superior performance in additional experiments conducted with the MMLU and Mini Crossword Puzzles datasets.
 
 ### Acknowledgments
@@ -60,7 +64,7 @@ This research builds upon the work by [Zhuge et al.](https://arxiv.org/abs/2402.
 
 ### Contact
 
-For any questions or issues, please open an issue on this repository or contact us at [lvierling@ust.connect.hk](lvierling@ust.connect.hk).
+For any questions or issues, please open an issue on this repository or contact us at [lvierling@ust.connect.hk](mailto:lvierling@ust.connect.hk).
 
 ### Citation
 
