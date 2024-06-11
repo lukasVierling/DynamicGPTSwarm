@@ -4,6 +4,10 @@ result/
 gemma-Code-Instruct-Finetune-test/
 dataset/CMMLU/data
 
+#not public
+edge_network_tests.ipynb
+run_mmlu2.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
