@@ -51,7 +51,7 @@ You can include one of the following arguments:
 
 
 ## Results
-![Results Graphic](diagrams/results.pdf)
+![Results Graphic](diagrams/results.jpg)
 We demonstrate that our approach surpasses the previous static approach by nearly 6% accuracy on a combined dataset of MMLU and CMMLU, and by more than 10% when trained with a sparsity-inducing loss. It also shows superior performance in additional experiments conducted with the MMLU and Mini Crossword Puzzles datasets.
 
 ### Acknowledgments
