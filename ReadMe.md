@@ -70,16 +70,20 @@ This research builds upon the work by [Zhuge et al.](https://arxiv.org/abs/2402.
 
 For any questions or issues, please open an issue on this repository or contact us at [lvierling@ust.connect.hk](mailto:lvierling@ust.connect.hk).
 
+### Paper
+
+The paper related to this repository can be found [here]([https://github.com/metauto-ai/GPTSwarm](https://arxiv.org/abs/2406.11555)).
+
 ### Citation
 
 If you find this work useful for your research, please consider citing (TODO: add citation):
 ```
-@article{AuthorYear,
-  author = {Author},
-  title = {Title},
-  journal = {Journal},
-  year = {Year},
-  doi = {DOI},
-  url = {URL}
+@misc{vierling2024input,
+      title={Input Conditioned Graph Generation for Language Agents}, 
+      author={Lukas Vierling and Jie Fu and Kai Chen},
+      year={2024},
+      eprint={2406.11555},
+      archivePrefix={arXiv},
+      primaryClass={id='cs.CL' full_name='Computation and Language' is_active=True alt_name='cmp-lg' in_archive='cs' is_general=False description='Covers natural language processing. Roughly includes material in ACM Subject Class I.2.7. Note that work on artificial languages (programming languages, logics, formal systems) that does not explicitly address natural-language issues broadly construed (natural-language processing, computational linguistics, speech, text retrieval, etc.) is not appropriate for this area.'}
 }
 ```
