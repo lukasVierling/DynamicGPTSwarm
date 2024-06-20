@@ -72,7 +72,7 @@ For any questions or issues, please open an issue on this repository or contact 
 
 ### Paper
 
-The paper related to this repository can be found [here](https://github.com/metauto-ai/GPTSwarm](https://arxiv.org/abs/2406.11555).
+The paper related to this repository can be found [here](https://arxiv.org/abs/2406.11555).
 
 ### Citation
 
